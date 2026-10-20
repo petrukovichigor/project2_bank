@@ -1,7 +1,8 @@
 #include "Headers.h"
 
 int main() {
-	setlocale(0, "");
+	SetConsoleCP(65001);
+	SetConsoleOutputCP(65001);
 	std::ifstream file("input.txt");
 	if (!file) {
 		std::cerr << "Ошибка открытия input.txt\n";

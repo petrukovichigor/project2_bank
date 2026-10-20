@@ -1,0 +1,14 @@
+# Среда разработки JetBrains (CLion)
+.idea/
+cmake-build-*/
+
+# Результаты сборки и компиляции
+*.o
+*.obj
+*.exe
+*.a
+*.lib
+
+# Локальные системные файлы
+.DS_Store
+Thumbs.db
