@@ -11,4 +11,5 @@ add_executable(BankProject
         DebitAccount.h
         DepositAccount.h
         Headers.h
+        AccountCollection.h
 )

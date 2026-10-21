@@ -2,104 +2,122 @@
 #include "Headers.h"
 
 enum class AccountType {
-    Debit,   // ���������� �������
-    Credit,     // ����������� �������
-    Deposit,   // ����������� �������
-    Unknown      // ����������� ��� (�� ������ ������)
+    Debit,
+    Credit,
+    Deposit,
+    Unknown
 };
 
-// ����������� ������� ����� ��� ���� ������
-// ��������� ������������, ����������� � ���������� ������ � �������
+enum class AccountStatus {
+    Active,
+    Frozen,
+    Closed
+};
+
+enum class AccountCurrency {
+    BYN,
+    USD,
+    RUB,
+    EUR,
+    CNY
+};
+
 class BaseAccount {
 private:
-    std::string name{};   // �������� �������
-    double weight{};      // ��� � �������
-    double price{};       // ���� � �������� ��������
-    double sugar{};       // ���������� ������ (� ������� �� 100 � ��� ���������� �������� � ���������� � �����������)
+    AccountType type; // Тип аккаунта
+    std::string ownerName{}; // ФИО владельца счета
+    double balance{}; // Текущий баланс
+    int accountID{}; // ID аккаунта
+    // std::string openDate{}; СДЕЛАТЬ ЧЕРЕЗ ХРОНО
+    AccountCurrency currency {AccountCurrency::BYN}; // Валюта счета (из enum AccountCurrency)
+    AccountStatus status{AccountStatus::Active}; // Статус аккаунта (из enum AccountStatus)
 
 public:
-    // ����������� ���������� ��������� ��� ����������� �������� �������� ����� ��������� �� ������� �����
+
     virtual ~BaseAccount() = default;
 
-    // ����� ����������� ����� � ���������� ��� �������
-    // ���������� ��� ��������������� � ������ ������-����������
     virtual AccountType getType() const noexcept = 0;
+    std::string getOwnerName() const noexcept { return ownerName; }
+    double getBalance() const noexcept { return balance; }
+    int getAccountID() const noexcept { return accountID; }
+    // std::string getOpenDate() const noexcept { return openDate; }
+    AccountCurrency getCurrency() const noexcept { return currency; }
+    AccountStatus getStatus() const noexcept { return status; }
 
-    // ������� � ���������� ������ � ����� (������ ������)
-    std::string getName() const noexcept { return name; }
-    double getWeight() const noexcept { return weight; }
-    double getPrice() const noexcept { return price; }
-    double getSugar() const noexcept { return sugar; }
+    void setType(AccountType _type) {
 
-    // ������� � ������������� �������� � ��������� ������������
-    // ���� ������ ����������� � ������������� ���������� std::invalid_argument
-
-    void setName(const std::string& _name) {
-        if (_name.empty()) throw std::invalid_argument("��� �� ������ ���� ������");
-        name = _name;
     }
 
-    void setWeight(double _weight) {
-        if (_weight <= 0 || _weight > 10000) // �����������: �� 0 �� 10 ��
-            throw std::invalid_argument("��� ������ ���� � ��������� (0; 10000]");
-        weight = _weight;
-    }
-
-    void setPrice(double _price) {
-        if (_price < 0 || _price > 1e9) // �����������: �������� ����
-            throw std::invalid_argument("���� ������ ���� ��������������� � ��������");
-        price = _price;
-    }
-
-    void setSugar(double _sugar) {
-        if (_sugar < 0 || _sugar > 10000) // �����������: ��������������� ��������
-            throw std::invalid_argument("���������� ������ ������ ���� ��������������� � ��������");
-        sugar = _sugar;
-    }
-
-    // ����� ������ ������ �� ������ (��������, �� ����� ��� �������)
-    // ���� ������ ����������� � ������������� ���������� std::runtime_error
-    virtual std::istream& read(std::istream& in) {
-        std::string n; double w, p, s;
-        if (!(in >> n >> w >> p >> s)) {
-            in.clear(std::ios::failbit);
-            throw std::runtime_error("������ ������ ������ �������");
+    void setOwnerName(const std::string& _name) {
+        if (_name.empty()) {
+            throw std::invalid_argument("Имя владельца счета не может быть пустым!");
         }
-        setName(n);
-        setWeight(w);
-        setPrice(p);
-        setSugar(s);
+        ownerName = _name;
+    }
+
+    void setBalance(double _balance) {
+        if (_balance < 0)
+            throw std::invalid_argument("Баланс не может быть отрицательным!");
+        balance = _balance;
+    }
+
+    void setAccountID(double _id) {
+        if (_id < 0)
+            throw std::invalid_argument("ID не может быть отрицательным!");
+        accountID = _id;
+    }
+
+    // void setOpenDate(double _date) {
+    //     if (_date < 0 || _date > 10000)
+    //         throw std::invalid_argument("Неверный формат даты!");
+    //     openDate = _date;
+    // }
+
+    void setCurrency(AccountCurrency _currency) {
+
+    }
+
+    void setStatus(AccountStatus _status) {
+
+    }
+
+    virtual std::istream& read(std::istream& in) {
+        AccountType t; std::string n; double b; int id; AccountCurrency c; AccountStatus s;
+        if (!(in >> t >> n >> b >> id >> c >> s)) {
+            in.clear(std::ios::failbit);
+            throw std::runtime_error("Ошибка чтения файла!");
+        }
+        setType(t);
+        setOwnerName(n);
+        setBalance(b);
+        setAccountID(id);
+        // setOpenDate(d);
+        setCurrency(c);
+        setStatus(s);
         return in;
     }
 
-    // ����� ������ ���������� � ������� � ����� (��������, �� ����� ��� � ����)
-    // ����� ���� ������������ � ����������� ��� ������������ �������
     virtual std::ostream& print(std::ostream& out) const noexcept {
         out << std::left
-            << "name " << std::setw(14) << name
-            << "| weight " << std::setw(8) << weight
-            << "| price " << std::setw(10) << price
-            << "| sugar " << std::setw(8) << sugar;
+            << "Owner Name " << std::setw(14) << ownerName
+            << "| Balance " << std::setw(8) << balance
+            << "| Account ID " << std::setw(10) << accountID
+            << "| Currency " << std::setw(8) << currency
+            << "| Status " << std::setw(10) << status
         return out;
     }
 };
 
-// ���������� ��������� << ��� ������ ������� �� ������
-// ��������� ������: std::cout << sweet;
 inline std::ostream& operator<<(std::ostream& out, const BaseAccount& s) {
     return s.print(out);
 }
 
-// ���������� ��������� << ��� shared_ptr<BaseSweet>
-// ��������� ������: std::cout << sweetPtr;
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<BaseAccount>& ptr) {
     if (ptr) ptr->print(out);
     else out << "<null account>"; // ���� ��������� ������
     return out;
 }
 
-// ���������� ��������� >> ��� ������ ������� �� ������
-// ��������� ������: std::cin >> sweet;
 inline std::istream& operator>>(std::istream& in, BaseAccount& s) {
     return s.read(in);
 }
