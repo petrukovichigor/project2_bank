@@ -1,0 +1,5 @@
+0 Truffle 120 250 35 85 dark 1
+1 OrangePop 50 80 60 orange round
+0 MilkBar 100 150 40 45 milk 0
+1 HeartPop 60 90 55 cherry heart
+2 CitrusJoy 80 120 30 orange 1
