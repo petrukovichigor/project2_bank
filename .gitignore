@@ -2,6 +2,9 @@
 .idea/
 cmake-build-*/
 
+# Делаем исключение для конкретного файла input.txt
+!cmake-build-debug/input.txt
+
 # Результаты сборки и компиляции
 *.o
 *.obj
