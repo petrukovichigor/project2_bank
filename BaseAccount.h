@@ -24,7 +24,6 @@ enum class AccountCurrency {
 
 class BaseAccount {
 private:
-    AccountType type; // Тип аккаунта
     std::string ownerName{}; // ФИО владельца счета
     double balance{}; // Текущий баланс
     int accountID{}; // ID аккаунта
