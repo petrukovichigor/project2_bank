@@ -17,6 +17,28 @@
 
 ---
 
+## Файловая структура
+project2_bank/
+├── CMakeLists.txt
+├── README.md
+├── main.cpp
+├── docs/Task.pdf
+├── data/                    # файлы для сохранения каталога и банка
+├── include/
+│   ├── Headers.h
+│   ├── Exceptions.h         # LimitExceededException и др.
+│   ├── accounts/
+│   │   ├── BaseAccount.h
+│   │   ├── DebitAccount.h
+│   │   ├── CreditAccount.h
+│   │   └── DepositAccount.h
+│   ├── catalog/
+│   │   ├── BankService.h
+│   │   └── ServiceCatalog.h
+│   └── Bank.h
+
+---
+
 ## 🛠️ Функциональные требования к программе
 
 ### 1. Главное меню консоли
