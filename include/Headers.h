@@ -11,10 +11,10 @@
 #include <algorithm>
 #include <iterator>
 
-#include "BaseAccount.h"
-#include "DebitAccount.h"
-#include "DepositAccount.h"
-#include "CreditAccount.h"
-#include "AccountCatalog.h"
+#include "accounts/BaseAccount.h"
+#include "accounts/DebitAccount.h"
+#include "accounts/DepositAccount.h"
+#include "accounts/CreditAccount.h"
+#include "catalog/ServiceCatalog.h"
 
 #include <windows.h>

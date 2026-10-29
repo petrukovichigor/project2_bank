@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Headers.h"
+#include "../Headers.h"
 // Класс Chocolate — наследник BaseSweet
 // Представляет шоколадную конфету с дополнительными характеристиками
 

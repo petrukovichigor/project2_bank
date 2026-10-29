@@ -1,7 +1,7 @@
-#include "Headers.h"
 #pragma once
+#include "../Headers.h"
 
-class AccountCollection {
+class ServiceCatalog {
 private:
 	std::vector<std::shared_ptr<BaseAccount>> accounts;
 

@@ -1,6 +1,6 @@
 #pragma once
-#include "AccountCollection.h"
-#include "headers.h"
+#include "catalog/ServiceCatalog.h"
+#include "Headers.h"
 
 
 class Bank
@@ -14,8 +14,8 @@ public:
     ~Bank() = default;
     double getCost() const { return cost; }
     double getWeight() const { return weight; }
-    void createByWeight(double, AccountCollection&);
-    void createByCost(double, AccountCollection&);
+    void createByWeight(double, ServiceCatalog&);
+    void createByCost(double, ServiceCatalog&);
     void print(std::ostream&);
     void findSweetSugar(double min, double max);
     long getSize() const { return present.size(); }
@@ -43,7 +43,7 @@ void Bank::findSweetSugar(double min, double max)
     }
 }
 
-void Bank::createByWeight(double weightMax, AccountCollection& sweet) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+void Bank::createByWeight(double weightMax, ServiceCatalog& sweet) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 {
     bool flag = true;
     Bank present;
@@ -72,7 +72,7 @@ void Bank::createByWeight(double weightMax, AccountCollection& sweet) //ï¿½ï¿½ï¿
     *this = present;
 }
 
-void Bank::createByCost(double costMax, AccountCollection& sweet)
+void Bank::createByCost(double costMax, ServiceCatalog& sweet)
 {
     bool flag = true;
     Bank present;
