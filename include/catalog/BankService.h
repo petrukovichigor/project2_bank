@@ -1,8 +1,17 @@
-//
-// Created by User on 29.10.2026.
-//
+#pragma once
 
-#ifndef BANKPROJECT_BANKSERVICE_H
-#define BANKPROJECT_BANKSERVICE_H
-
-#endif //BANKPROJECT_BANKSERVICE_H
+class BankService {
+	private:
+	int id;
+	std::string name;
+	AccountType type;
+	AccountCurrency currency;
+	double interestRate;
+	double monthlyFee;
+	double minBalance;
+	double creditLimit;
+	int termMonths;
+	public:
+	BankService() = default;
+	~BankService();
+};

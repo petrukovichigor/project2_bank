@@ -9,7 +9,7 @@ int main() {
 		return 1;
 	}
 
-	std::vector<std::shared_ptr<BaseAccount>> sweets;
+	std::vector<std::shared_ptr<BaseAccount>> accounts;
 
 	int typeInt;
 	while (file >> typeInt) {
@@ -27,13 +27,9 @@ int main() {
 
 
 		file >> *account;
-		sweets.push_back(account);
+		accounts.push_back(account);
 
 	}
-
-	std::cout << "������ ������:\n";
-	std::copy(sweets.begin(), sweets.end(),
-		std::ostream_iterator<std::shared_ptr<BaseAccount>>(std::cout, "\n"));
 
 	return 0;
 }

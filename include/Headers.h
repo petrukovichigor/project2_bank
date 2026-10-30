@@ -15,6 +15,7 @@
 #include "accounts/DebitAccount.h"
 #include "accounts/DepositAccount.h"
 #include "accounts/CreditAccount.h"
+#include "catalog/BankService.h"
 #include "catalog/ServiceCatalog.h"
 
 #include <windows.h>

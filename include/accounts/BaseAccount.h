@@ -1,5 +1,4 @@
 /*
- * ============================================================================
  *  BaseAccount.h — абстрактный базовый класс банковского счёта
  * ============================================================================
  *
@@ -8,24 +7,20 @@
  *  (описание услуг лежит в BankService / ServiceCatalog), а именно реальный
  *  счёт, который хранится в классе Bank.
  *
- *  ПОЧЕМУ ФАЙЛ ВАЖЕН
- *  -----------------
  *  1. Это корень иерархии счетов: DebitAccount, CreditAccount и DepositAccount
  *     наследуются отсюда. Bank хранит их все как std::shared_ptr<BaseAccount>
  *     и работает с ними полиморфно (сортировка по балансу, поиск по владельцу,
  *     печать, сохранение), не зная, какой именно тип счёта перед ним.
  *  2. Класс абстрактный: чисто виртуальный getType() не даёт создать «просто
  *     счёт» — только дебетовый, кредитный или депозитный.
- *  3. Все сеттеры проверяют данные и бросают исключения (критерий «Исключения»).
+ *  3. Все сеттеры проверяют данные и бросают исключения.
  *  4. Здесь же задан формат строки счёта в файле (read / write), который
- *     используют Bank::save и Bank::load (критерий «Файлы»).
+ *     используют Bank::save и Bank::load.
  *
- *  ФОРМАТ ЗАПИСИ СЧЁТА В ФАЙЛЕ
- *  ---------------------------
  *  Каждое поле заканчивается символом ';', запись заканчивается переводом
  *  строки (его пишет Bank::save). Порядок полей:
  *
- *      тип;id;владелец;баланс;валюта;статус;id услуги;
+ *      (тип);id;владелец;баланс;валюта;статус;id услуги;
  *
  *  Пример: 2;17;Петров Пётр Петрович;1500.50;1;0;4;
  *
@@ -60,9 +55,7 @@ enum class AccountCurrency {
     CNY
 };
 
-// ---------------------------------------------------------------------------
 //  Преобразование перечислений в текст (для вывода в консоль)
-// ---------------------------------------------------------------------------
 inline std::string toString(AccountType type) {
     switch (type) {
         case AccountType::Debit:   return "Debit";
@@ -97,15 +90,13 @@ inline std::ostream& operator<<(std::ostream& out, AccountType type)         { r
 inline std::ostream& operator<<(std::ostream& out, AccountStatus status)     { return out << toString(status); }
 inline std::ostream& operator<<(std::ostream& out, AccountCurrency currency) { return out << toString(currency); }
 
-// ===========================================================================
 //  Класс BaseAccount
-// ===========================================================================
 class BaseAccount {
 private:
     std::string ownerName{};   // ФИО владельца счета
     double balance{};          // Текущий баланс
     int accountID{};           // ID счета
-    int serviceId{};           // ID услуги из ServiceCatalog, по которой открыт счет
+    int serviceID{};           // ID услуги из ServiceCatalog, по которой открыт счет
     // std::string openDate{}; // TODO: дата открытия счета (сделать через <chrono>)
     AccountCurrency currency{AccountCurrency::BYN}; // Валюта счета
     AccountStatus   status{AccountStatus::Active};  // Статус счета
@@ -116,17 +107,16 @@ public:
     // Тип счёта задаётся самим классом-наследником, поэтому сеттера setType() нет.
     virtual AccountType getType() const noexcept = 0;
 
-    // Нижний предел баланса. У дебетового и депозитного счёта это 0,
-    // кредитный счёт переопределяет метод и возвращает отрицательный лимит.
+    // Нижний предел баланса. У дебетового и депозитного счёта это 0, кредитный счёт переопределяет метод и возвращает отрицательный лимит.
     virtual double getMinBalance() const noexcept { return 0.0; }
 
     // Геттеры
-    std::string     getOwnerName() const noexcept { return ownerName; }
-    double          getBalance()   const noexcept { return balance; }
-    int             getAccountID() const noexcept { return accountID; }
-    int             getServiceId() const noexcept { return serviceId; }
-    AccountCurrency getCurrency()  const noexcept { return currency; }
-    AccountStatus   getStatus()    const noexcept { return status; }
+    std::string getOwnerName() const noexcept { return ownerName; }
+    double getBalance() const noexcept { return balance; }
+    int getAccountID() const noexcept { return accountID; }
+    int getServiceID() const noexcept { return serviceID; }
+    AccountCurrency getCurrency() const noexcept { return currency; }
+    AccountStatus getStatus() const noexcept { return status; }
 
     // Сеттеры с проверкой данных
     void setOwnerName(const std::string& _name) {
@@ -154,11 +144,11 @@ public:
         accountID = _id;
     }
 
-    void setServiceId(int _id) {
+    void setServiceID(int _id) {
         if (_id < 0) {
             throw std::invalid_argument("ID услуги не может быть отрицательным!");
         }
-        serviceId = _id;
+        serviceID = _id;
     }
 
     void setCurrency(AccountCurrency _currency) {
@@ -206,7 +196,7 @@ public:
         // применяем значения через сеттеры (они ещё раз проверяют данные)
         setAccountID(id);
         setOwnerName(owner);
-        setServiceId(service);
+        setServiceID(service);
         setCurrency(static_cast<AccountCurrency>(currencyNumber));
         setStatus(static_cast<AccountStatus>(statusNumber));
         setBalance(bal);   // последним: проверка зависит от getMinBalance()
@@ -226,7 +216,7 @@ public:
             << std::fixed << std::setprecision(2) << balance << ';'  // деньги с 2 знаками
             << static_cast<int>(currency) << ';'
             << static_cast<int>(status) << ';'
-            << serviceId << ';';
+            << serviceID << ';';
 
         out.flags(oldFlags);
         out.precision(oldPrecision);
@@ -246,7 +236,7 @@ public:
             << "| Balance " << std::setw(12) << balance
             << "| Currency " << std::setw(5) << currency
             << "| Status " << std::setw(8) << status
-            << "| Service ID " << serviceId;
+            << "| Service ID " << serviceID;
 
         out.flags(oldFlags);
         out.precision(oldPrecision);

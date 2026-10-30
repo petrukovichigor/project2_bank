@@ -1,33 +1,33 @@
 #pragma once
-#include "../Headers.h"
+#include "include/Headers.h"
 
 class ServiceCatalog {
 private:
-	std::vector<std::shared_ptr<BaseAccount>> accounts;
+	std::vector<std::shared_ptr<BankService>> services;
 
 public:
-	void add(const std::shared_ptr<BaseAccount>& account) {
-		if (account) accounts.push_back(account);
+	void add(const std::shared_ptr<BankService>& account) {
+		if (account) services.push_back(account);
 	}
 
 	void print(std::ostream& out) const {
 		out << ":\n";
-		std::copy(accounts.begin(), accounts.end(),
-			std::ostream_iterator<std::shared_ptr<BaseAccount>>(out, "\n"));
+		std::copy(services.begin(), services.end(),
+			std::ostream_iterator<std::shared_ptr<BankService>>(out, "\n"));
 	}
 
 	void sortByWeight() {
-		std::sort(accounts.begin(), accounts.end(),
-			[](std::shared_ptr<BaseAccount> & a, std::shared_ptr<BaseAccount> & b) { return a->getWeight() < b->getWeight(); });
+		std::sort(services.begin(), services.end(),
+			[](std::shared_ptr<BankService> & a, std::shared_ptr<BankService> & b) { return a->getWeight() < b->getWeight(); });
 	}
 
 	void sortByPrice() {
-		std::sort(accounts.begin(), accounts.end(),
+		std::sort(services.begin(), services.end(),
 			[](auto& a, auto& b) { return a->getPrice() < b->getPrice(); });
 	}
 
 	void sortBySugar() {
-		std::sort(accounts.begin(), accounts.end(),
+		std::sort(services.begin(), services.end(),
 			[](auto& a, auto& b) { return a->getSugar() < b->getSugar(); });
 	}
 
@@ -35,19 +35,19 @@ public:
 		int typeInt;
 		while (in >> typeInt) {
 			AccountType type = static_cast<AccountType>(typeInt);
-			std::shared_ptr<BaseAccount> account;
+			std::shared_ptr<BankService> service;
 
 			switch (type) {
-				case AccountType::Debit: account = std::make_shared<DebitAccount>(); break;
-				case AccountType::Credit:   account = std::make_shared<CreditAccount>(); break;
-				case AccountType::Deposit: account = std::make_shared<DepositAccount>(); break;
+				case AccountType::Debit: service = std::make_shared<DebitAccount>(); break;
+				case AccountType::Credit:   service = std::make_shared<CreditAccount>(); break;
+				case AccountType::Deposit: service = std::make_shared<DepositAccount>(); break;
 				default:
 					std::cerr << "Ошибка: Неизвестный тип аккаунта (" << typeInt << ")\n";
 					continue;
 			}
 
-			in >> *account;
-			accounts.push_back(account);
+			in >> *service;
+			services.push_back(service);
 		}
 	}
 };

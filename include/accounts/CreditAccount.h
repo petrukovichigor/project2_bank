@@ -1,6 +1,7 @@
 #pragma once
 #include "../Headers.h"
 
+
 class CreditAccount : public BaseAccount {
 private:
     std::string taste{}; // ���� (��������, ��������, ��������)

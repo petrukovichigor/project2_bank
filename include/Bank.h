@@ -3,12 +3,10 @@
 #include "Headers.h"
 
 
-class Bank
-{
+class Bank {
 private:
-    std::vector<std::shared_ptr<BaseSweet>> present;
-    double weight = 0; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    double cost = 0; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    std::vector<std::shared_ptr<BaseAccount>> accounts;
+    ServiceCatalog catalog;
 public:
     Bank() = default;
     ~Bank() = default;
@@ -18,7 +16,7 @@ public:
     void createByCost(double, ServiceCatalog&);
     void print(std::ostream&);
     void findSweetSugar(double min, double max);
-    long getSize() const { return present.size(); }
+    long getSize() const { return accounts.size(); }
     void sortName();
     void sortWeight();
     void sortPrice();
@@ -27,11 +25,11 @@ public:
 
 void Bank::findSweetSugar(double min, double max)
 {
-    std::sort(present.begin(), present.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getSugar() < b->getSugar(); });
-    auto tempBegin = std::find_if(present.begin(), present.end(), [min](std::shared_ptr<BaseAccount> a) { return a->getSugar() >= min; });
-    auto tempEnd = std::find_if(present.begin(), present.end(), [max](std::shared_ptr<BaseAccount> a) { return a->getSugar() > max; });
+    std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getSugar() < b->getSugar(); });
+    auto tempBegin = std::find_if(accounts.begin(), accounts.end(), [min](std::shared_ptr<BaseAccount> a) { return a->getSugar() >= min; });
+    auto tempEnd = std::find_if(accounts.begin(), accounts.end(), [max](std::shared_ptr<BaseAccount> a) { return a->getSugar() > max; });
 
-    if (tempBegin == present.end())
+    if (tempBegin == accounts.end())
     {
         std::cout << "\nNot sweet!\n";
         return;
@@ -60,7 +58,7 @@ void Bank::createByWeight(double weightMax, ServiceCatalog& sweet) //ï¿½ï¿½ï¿½ï¿
                     weightMax -= sweets->getWeight();
                     present.cost += sweets->getPrice();
                     present.weight += sweets->getWeight();
-                    present.present.push_back(sweets);
+                    present.accounts.push_back(sweets);
                 }
                 else if (weightMax < sweet.back()->getWeight())
                 {
@@ -87,7 +85,7 @@ void Bank::createByCost(double costMax, ServiceCatalog& sweet)
                     costMax -= sweets->getPrice();
                     present.cost += sweets->getPrice();
                     present.weight += sweets->getWeight();
-                    present.present.push_back(sweets);
+                    present.accounts.push_back(sweets);
                 }
                 else if (costMax < sweet.back()->getPrice())
                 {
@@ -101,25 +99,25 @@ void Bank::createByCost(double costMax, ServiceCatalog& sweet)
 
 void Bank::print(std::ostream& out)
 {
-    std::copy(present.begin(), present.end(), std::ostream_iterator<std::shared_ptr<BaseAccount>>(out, "\n"));
+    std::copy(accounts.begin(), accounts.end(), std::ostream_iterator<std::shared_ptr<BaseAccount>>(out, "\n"));
 }
 
 void Bank::sortName()
 {
-    std::sort(present.begin(), present.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getName() < b->getName(); });
+    std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getName() < b->getName(); });
 }
 
 void Bank::sortWeight()
 {
-    std::sort(present.begin(), present.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getWeight() < b->getWeight(); });
+    std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getWeight() < b->getWeight(); });
 }
 
 void Bank::sortPrice()
 {
-    std::sort(present.begin(), present.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getPrice() < b->getPrice(); });
+    std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getPrice() < b->getPrice(); });
 }
 
 void Bank::sortSugar()
 {
-    std::sort(present.begin(), present.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getSugar() < b->getSugar(); });
+    std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getSugar() < b->getSugar(); });
 }

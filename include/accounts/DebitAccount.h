@@ -1,7 +1,5 @@
 ﻿#pragma once
 #include "../Headers.h"
-// Класс Chocolate — наследник BaseSweet
-// Представляет шоколадную конфету с дополнительными характеристиками
 
 class DebitAccount: public BaseAccount {
 private:
