@@ -1,12 +1,15 @@
 /*
+ * ============================================================================
  *  BaseAccount.h — абстрактный базовый класс банковского счёта
  * ============================================================================
  *
+ *  СУТЬ ФАЙЛА
  *  Здесь описан КОНКРЕТНЫЙ СЧЁТ КЛИЕНТА: владелец, баланс, ID, валюта, статус
  *  и идентификатор услуги, по которой счёт был открыт. Это не «услуга банка»
  *  (описание услуг лежит в BankService / ServiceCatalog), а именно реальный
  *  счёт, который хранится в классе Bank.
  *
+ *  ПОЧЕМУ ФАЙЛ ВАЖЕН
  *  1. Это корень иерархии счетов: DebitAccount, CreditAccount и DepositAccount
  *     наследуются отсюда. Bank хранит их все как std::shared_ptr<BaseAccount>
  *     и работает с ними полиморфно (сортировка по балансу, поиск по владельцу,
@@ -17,17 +20,46 @@
  *  4. Здесь же задан формат строки счёта в файле (read / write), который
  *     используют Bank::save и Bank::load.
  *
- *  Каждое поле заканчивается символом ';', запись заканчивается переводом
- *  строки (его пишет Bank::save). Порядок полей:
+ *  ФОРМАТ ЗАПИСИ СЧЁТА В ФАЙЛЕ
+ *  Одна запись — одна строка, поля разделены пробелами. Сначала поля
+ *  базового класса:
  *
- *      (тип);id;владелец;баланс;валюта;статус;id услуги;
+ *      тип id владелец баланс валюта статус id_услуги
  *
- *  Пример: 2;17;Петров Пётр Петрович;1500.50;1;0;4;
+ *  а за ними поля конкретного типа счёта:
  *
- *  Тип, валюта и статус хранятся числами (значение enum class). Тип читает
- *  Bank::load функцией readAccountType(), создаёт объект нужного класса, а
- *  остальные поля заполняет вызовом read() (operator>>).
+ *      Debit   (0):  ... комиссия_в_месяц
+ *      Credit  (1):  ... кредитный_лимит ставка
+ *      Deposit (2):  ... ставка срок_в_месяцах
  *
+ *  Пример: 1 1004 Сидоров_Алексей_Николаевич -450.00 0 0 5 1000.00 18.50
+ *
+ *  ФИО пишется одним словом: пробелы заменяются на '_' (при чтении
+ *  обратно превращаются в пробелы). Тип, валюта и статус хранятся числами
+ *  (номер значения в enum class).
+ *
+ *  КАК Bank::load ЧИТАЕТ ФАЙЛ
+ *      int typeNumber;
+ *      while (in >> typeNumber) {                      // читаем тип
+ *          std::shared_ptr<BaseAccount> acc;
+ *          switch (static_cast<AccountType>(typeNumber)) {
+ *              case AccountType::Debit:   acc = std::make_shared<DebitAccount>();   break;
+ *              case AccountType::Credit:  acc = std::make_shared<CreditAccount>();  break;
+ *              case AccountType::Deposit: acc = std::make_shared<DepositAccount>(); break;
+ *              default: throw std::runtime_error("Неизвестный тип счета!");
+ *          }
+ *          in >> *acc;                                  // читаем остальные поля
+ *          accounts.push_back(acc);
+ *      }
+ *
+ *  КАК ПИСАТЬ НАСЛЕДНИКОВ
+ *   - обязательно переопределить getType();
+ *   - свои поля читать в readExtra(), записывать в writeExtra(), выводить в
+ *     printExtra(). Базовый класс сам вызывает их в нужный момент: после общих
+ *     полей, до проверки баланса (это важно для кредитного счёта, у которого
+ *     нижний предел баланса зависит от лимита);
+ *   - если у счёта другой нижний предел баланса (кредитный уходит в минус) —
+ *     переопределить getMinBalance().
  * ============================================================================
  */
 
@@ -55,7 +87,7 @@ enum class AccountCurrency {
     CNY
 };
 
-//  Преобразование перечислений в текст (для вывода в консоль)
+// Преобразование перечислений в текст (для вывода в консоль)
 inline std::string toString(AccountType type) {
     switch (type) {
         case AccountType::Debit:   return "Debit";
@@ -90,7 +122,7 @@ inline std::ostream& operator<<(std::ostream& out, AccountType type)         { r
 inline std::ostream& operator<<(std::ostream& out, AccountStatus status)     { return out << toString(status); }
 inline std::ostream& operator<<(std::ostream& out, AccountCurrency currency) { return out << toString(currency); }
 
-//  Класс BaseAccount
+// Класс BaseAccount
 class BaseAccount {
 private:
     std::string ownerName{};   // ФИО владельца счета
@@ -101,13 +133,21 @@ private:
     AccountCurrency currency{AccountCurrency::BYN}; // Валюта счета
     AccountStatus   status{AccountStatus::Active};  // Статус счета
 
+protected:
+    // Сюда наследники кладут СВОИ поля. У базового класса своих дополнительных
+    // полей нет, поэтому методы пустые.
+    virtual void readExtra(std::istream&) {}               // чтение из файла
+    virtual void writeExtra(std::ostream&) const {}        // запись в файл (начинать с пробела)
+    virtual void printExtra(std::ostream&) const {}        // вывод в консоль
+
 public:
     virtual ~BaseAccount() = default;
 
     // Тип счёта задаётся самим классом-наследником, поэтому сеттера setType() нет.
     virtual AccountType getType() const noexcept = 0;
 
-    // Нижний предел баланса. У дебетового и депозитного счёта это 0, кредитный счёт переопределяет метод и возвращает отрицательный лимит.
+    // Нижний предел баланса. У дебетового и депозитного счёта это 0,
+    // кредитный счёт переопределяет метод и возвращает отрицательный лимит.
     virtual double getMinBalance() const noexcept { return 0.0; }
 
     // Геттеры
@@ -123,9 +163,9 @@ public:
         if (_name.empty()) {
             throw std::invalid_argument("Имя владельца счета не может быть пустым!");
         }
-        // символ ';' и перевод строки сломали бы формат файла
-        if (_name.find_first_of(";\r\n") != std::string::npos) {
-            throw std::invalid_argument("Имя владельца не должно содержать символ ';' и переводы строк!");
+        // '_' в файле означает пробел, а переводы строк и табуляция сломали бы формат
+        if (_name.find_first_of("_\t\r\n") != std::string::npos) {
+            throw std::invalid_argument("Имя владельца не должно содержать символ '_' и переводы строк!");
         }
         ownerName = _name;
     }
@@ -161,31 +201,19 @@ public:
 
     // ---- Чтение из файла ----------------------------------------------------
     // Читает поля счёта ПОСЛЕ типа (тип уже прочитал Bank::load):
-    //     id;владелец;баланс;валюта;статус;id услуги;
+    //     id владелец баланс валюта статус id_услуги + поля наследника
     virtual std::istream& read(std::istream& in) {
-        std::string idText, owner, balanceText, currencyText, statusText, serviceText;
-
-        // читаем 6 полей, каждое до символа ';'
-        if (!std::getline(in, idText, ';')       || !std::getline(in, owner, ';') ||
-            !std::getline(in, balanceText, ';')  || !std::getline(in, currencyText, ';') ||
-            !std::getline(in, statusText, ';')   || !std::getline(in, serviceText, ';')) {
-            throw std::runtime_error("Ошибка чтения файла: неполная запись счета!");
-        }
-
-        // переводим текст в числа; если в файле не число — это ошибка файла
-        int id, currencyNumber, statusNumber, service;
+        std::string name;
         double bal;
-        try {
-            id             = std::stoi(idText);
-            bal            = std::stod(balanceText);
-            currencyNumber = std::stoi(currencyText);
-            statusNumber   = std::stoi(statusText);
-            service        = std::stoi(serviceText);
-        } catch (const std::logic_error&) {
-            throw std::runtime_error("Ошибка чтения файла: неверный формат числа в записи счета!");
+        int id, currencyNumber, statusNumber, service;
+
+        // 1. читаем поля базового класса
+        if (!(in >> id >> name >> bal >> currencyNumber >> statusNumber >> service)) {
+            in.clear(std::ios::failbit);
+            throw std::runtime_error("Ошибка чтения файла: неверная запись счета!");
         }
 
-        // номера валюты и статуса должны существовать в перечислениях
+        // 2. номера валюты и статуса должны существовать в перечислениях
         if (currencyNumber < 0 || currencyNumber > static_cast<int>(AccountCurrency::CNY)) {
             throw std::runtime_error("Ошибка чтения файла: неизвестная валюта!");
         }
@@ -193,30 +221,41 @@ public:
             throw std::runtime_error("Ошибка чтения файла: неизвестный статус счета!");
         }
 
-        // применяем значения через сеттеры (они ещё раз проверяют данные)
+        // 3. в файле ФИО записано через '_', возвращаем пробелы
+        std::replace(name.begin(), name.end(), '_', ' ');
+
+        // 4. наследник читает свои поля (например, кредитный лимит)
+        readExtra(in);
+
+        // 5. применяем значения через сеттеры (они ещё раз проверяют данные)
         setAccountID(id);
-        setOwnerName(owner);
+        setOwnerName(name);
         setServiceID(service);
         setCurrency(static_cast<AccountCurrency>(currencyNumber));
         setStatus(static_cast<AccountStatus>(statusNumber));
-        setBalance(bal);   // последним: проверка зависит от getMinBalance()
+        setBalance(bal);   // последним: проверка зависит от getMinBalance(),
+                           // а он у кредитного счёта зависит от прочитанного лимита
         return in;
     }
 
     // ---- Запись в файл ------------------------------------------------------
     // Пишет счёт вместе с типом, без перевода строки в конце:
-    //     тип;id;владелец;баланс;валюта;статус;id услуги;
+    //     тип id владелец баланс валюта статус id_услуги + поля наследника
     virtual std::ostream& write(std::ostream& out) const {
         auto oldFlags = out.flags();          // запоминаем настройки потока,
         auto oldPrecision = out.precision();  // чтобы вернуть их обратно
 
-        out << static_cast<int>(getType()) << ';'
-            << accountID << ';'
-            << ownerName << ';'
-            << std::fixed << std::setprecision(2) << balance << ';'  // деньги с 2 знаками
-            << static_cast<int>(currency) << ';'
-            << static_cast<int>(status) << ';'
-            << serviceID << ';';
+        std::string name = ownerName;
+        std::replace(name.begin(), name.end(), ' ', '_');   // ФИО одним словом
+
+        out << static_cast<int>(getType()) << ' '
+            << accountID << ' '
+            << name << ' '
+            << std::fixed << std::setprecision(2) << balance << ' '   // деньги с 2 знаками
+            << static_cast<int>(currency) << ' '
+            << static_cast<int>(status) << ' '
+            << serviceID;
+        writeExtra(out);   // поля наследника (тоже с 2 знаками для дробных)
 
         out.flags(oldFlags);
         out.precision(oldPrecision);
@@ -232,11 +271,12 @@ public:
         out << std::left << std::fixed << std::setprecision(2)
             << "Type " << std::setw(8) << getType()
             << "| Account ID " << std::setw(6) << accountID
-            << "| Owner Name " << std::setw(24) << ownerName
+            << "| Owner Name " << ownerName << " "   // без setw: он считает байты, а кириллица в UTF-8 занимает 2 байта на букву
             << "| Balance " << std::setw(12) << balance
             << "| Currency " << std::setw(5) << currency
             << "| Status " << std::setw(8) << status
             << "| Service ID " << serviceID;
+        printExtra(out);   // поля наследника
 
         out.flags(oldFlags);
         out.precision(oldPrecision);

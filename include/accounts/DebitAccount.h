@@ -1,69 +1,77 @@
-﻿#pragma once
+﻿/*
+ * ============================================================================
+ *  DebitAccount.h — дебетовый счёт
+ * ============================================================================
+ *
+ *  СУТЬ ФАЙЛА
+ *  Обычный расчётный счёт клиента: на нём лежат собственные деньги, уйти в
+ *  минус нельзя (нижний предел баланса — 0, его задаёт BaseAccount).
+ *  Своё поле у счёта одно: ежемесячная комиссия за обслуживание. Её значение
+ *  Bank копирует из услуги каталога в момент открытия счёта.
+ *
+ *  ПОЧЕМУ ФАЙЛ ВАЖЕН
+ *  Это один из трёх типов счетов в иерархии BaseAccount. Bank создаёт объект
+ *  этого класса, когда клиент открывает счёт по услуге типа Debit, и хранит
+ *  его как shared_ptr<BaseAccount>.
+ *
+ *  ФОРМАТ В ФАЙЛЕ (после общих полей BaseAccount):
+ *      ... id_услуги комиссия_в_месяц
+ * ============================================================================
+ */
+#pragma once
 #include "../Headers.h"
 
-class DebitAccount: public BaseAccount {
+#include <iostream>
+#include <stdexcept>
+
+class DebitAccount : public BaseAccount {
 private:
-    double cacao{};        // Содержание какао в процентах (0–100)
-    std::string type{};    // Тип шоколада (например, "молочный", "горький")
-    bool filling{};        // Наличие начинки: true — с начинкой, false — без
+    double monthlyFee{}; // Комиссия за обслуживание в месяц (>= 0)
+
+protected:
+    // Чтение своего поля из файла (вызывается из BaseAccount::read)
+    void readExtra(std::istream& in) override {
+        double fee;
+        if (!(in >> fee)) {
+            in.clear(std::ios::failbit);
+            throw std::runtime_error("Ошибка чтения данных дебетового счета");
+        }
+        setMonthlyFee(fee);
+    }
+
+    // Запись своего поля в файл (вызывается из BaseAccount::write)
+    void writeExtra(std::ostream& out) const override {
+        out << ' ' << monthlyFee;
+    }
+
+    // Вывод своего поля в консоль (вызывается из BaseAccount::print)
+    void printExtra(std::ostream& out) const override {
+        out << " | Fee " << monthlyFee;
+    }
 
 public:
     DebitAccount() = default;
     ~DebitAccount() override = default;
 
-    // Возвращает тип конфеты — используется при сохранении/загрузке
+    // Возвращает тип счёта — используется при сохранении / загрузке
     AccountType getType() const noexcept override {
         return AccountType::Debit;
     }
 
+    // Геттер
+    double getMonthlyFee() const noexcept { return monthlyFee; }
 
-    // Геттеры для специфичных полей
-    double getCacao() const noexcept { return cacao; }
-    std::string getChocolateType() const noexcept { return type; }
-    bool hasFilling() const noexcept { return filling; }
-
-    // Сеттеры с проверкой корректности
-    void setCacao(double _cacao) {
-        if (_cacao < 0 || _cacao > 100)
-            throw std::invalid_argument("Процент какао должен быть в диапазоне от 0 до 100");
-        cacao = _cacao;
-    }
-
-    void setChocolateType(const std::string& _type) {
-        if (_type.empty())
-            throw std::invalid_argument("Тип шоколада не должен быть пустым");
-        type = _type;
-    }
-
-    void setFilling(bool _filling) {
-        filling = _filling;
-    }
-
-    // Метод чтения данных из потока
-    // Сначала читаются базовые поля, затем специфичные
-    std::istream& read(std::istream& in) override {
-        BaseAccount::read(in); // читаем name, weight, price, sugar
-
-        double c; std::string t; int f;
-        if (!(in >> c >> t >> f)) {
-            in.clear(std::ios::failbit);
-            throw std::runtime_error("Ошибка чтения данных Chocolate");
+    // Сеттер с проверкой
+    void setMonthlyFee(double _fee) {
+        if (_fee < 0) {
+            throw std::invalid_argument("Комиссия не может быть отрицательной!");
         }
-
-        setCacao(c);
-        setChocolateType(t);
-        setFilling(f != 0); // преобразуем int → bool
-
-        return in;
+        monthlyFee = _fee;
     }
 
-    // Метод вывода информации о конфете
-    std::ostream& print(std::ostream& out) const noexcept override {
-        BaseAccount::print(out); // выводим базовые поля
-        out << " | cacao " << std::setw(6) << cacao
-            << " | type " << std::setw(10) << type
-            << " | filling " << (filling ? "yes" : "no");
-        return out;
+    // Списывает с баланса месячную комиссию.
+    // Если денег не хватает, setBalance бросит исключение, и баланс не изменится.
+    void chargeMonthlyFee() {
+        setBalance(getBalance() - monthlyFee);
     }
 };
-
