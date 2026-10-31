@@ -1,8 +1,29 @@
-//
-// Created by User on 29.10.2026.
-//
+/*
+* ============================================================================
+ *  Exceptions.h — собственные исключения проекта
+ * ============================================================================
+ *
+ *  Здесь описан собственный класс исключения LimitExceededException. Он
+ *  бросается, когда нарушено ограничение банка: нельзя открыть новый счёт,
+ *  потому что число открытых счетов уже достигло Bank::MAX_ACCOUNTS.
+ *
+ *  ПОЧЕМУ ФАЙЛ ВАЖЕН
+ *  1. Собственный класс позволяет отличить «банк переполнен» от остальных
+ *     ошибок (неверные данные, ошибка файла) и обработать его отдельно:
+ *         catch (const LimitExceededException& e) { ... }
+ *  2. Класс наследуется от std::runtime_error, поэтому остаётся обычным
+ *     исключением: его по-прежнему ловит и общий catch (const std::exception&),
+ *     а текст ошибки доступен через e.what().
+ *  3. Бросает его Bank::openAccount.
+ *
+ * ============================================================================
+ */
 
-#ifndef BANKPROJECT_EXCEPTIONS_H
-#define BANKPROJECT_EXCEPTIONS_H
+#pragma once
+#include "Headers.h"
 
-#endif //BANKPROJECT_EXCEPTIONS_H
+// Превышен лимит открытых счетов в банке
+class LimitExceededException : public std::runtime_error {
+public:
+	explicit LimitExceededException(const std::string& message) : std::runtime_error(message) {}
+};

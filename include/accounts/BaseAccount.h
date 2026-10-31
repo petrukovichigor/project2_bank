@@ -3,13 +3,11 @@
  *  BaseAccount.h — абстрактный базовый класс банковского счёта
  * ============================================================================
  *
- *  СУТЬ ФАЙЛА
  *  Здесь описан КОНКРЕТНЫЙ СЧЁТ КЛИЕНТА: владелец, баланс, ID, валюта, статус
  *  и идентификатор услуги, по которой счёт был открыт. Это не «услуга банка»
  *  (описание услуг лежит в BankService / ServiceCatalog), а именно реальный
  *  счёт, который хранится в классе Bank.
  *
- *  ПОЧЕМУ ФАЙЛ ВАЖЕН
  *  1. Это корень иерархии счетов: DebitAccount, CreditAccount и DepositAccount
  *     наследуются отсюда. Bank хранит их все как std::shared_ptr<BaseAccount>
  *     и работает с ними полиморфно (сортировка по балансу, поиск по владельцу,
@@ -21,11 +19,7 @@
  *     используют Bank::save и Bank::load.
  *
  *  ФОРМАТ ЗАПИСИ СЧЁТА В ФАЙЛЕ
- *  Одна запись — одна строка, поля разделены пробелами. Сначала поля
- *  базового класса:
- *
  *      тип id владелец баланс валюта статус id_услуги
- *
  *  а за ними поля конкретного типа счёта:
  *
  *      Debit   (0):  ... комиссия_в_месяц
@@ -38,28 +32,6 @@
  *  обратно превращаются в пробелы). Тип, валюта и статус хранятся числами
  *  (номер значения в enum class).
  *
- *  КАК Bank::load ЧИТАЕТ ФАЙЛ
- *      int typeNumber;
- *      while (in >> typeNumber) {                      // читаем тип
- *          std::shared_ptr<BaseAccount> acc;
- *          switch (static_cast<AccountType>(typeNumber)) {
- *              case AccountType::Debit:   acc = std::make_shared<DebitAccount>();   break;
- *              case AccountType::Credit:  acc = std::make_shared<CreditAccount>();  break;
- *              case AccountType::Deposit: acc = std::make_shared<DepositAccount>(); break;
- *              default: throw std::runtime_error("Неизвестный тип счета!");
- *          }
- *          in >> *acc;                                  // читаем остальные поля
- *          accounts.push_back(acc);
- *      }
- *
- *  КАК ПИСАТЬ НАСЛЕДНИКОВ
- *   - обязательно переопределить getType();
- *   - свои поля читать в readExtra(), записывать в writeExtra(), выводить в
- *     printExtra(). Базовый класс сам вызывает их в нужный момент: после общих
- *     полей, до проверки баланса (это важно для кредитного счёта, у которого
- *     нижний предел баланса зависит от лимита);
- *   - если у счёта другой нижний предел баланса (кредитный уходит в минус) —
- *     переопределить getMinBalance().
  * ============================================================================
  */
 
@@ -93,7 +65,7 @@ inline std::string toString(AccountType type) {
         case AccountType::Debit:   return "Debit";
         case AccountType::Credit:  return "Credit";
         case AccountType::Deposit: return "Deposit";
-        default:                   return "Unknown";
+        default: return "Unknown";
     }
 }
 
@@ -102,7 +74,7 @@ inline std::string toString(AccountStatus status) {
         case AccountStatus::Active: return "Active";
         case AccountStatus::Frozen: return "Frozen";
         case AccountStatus::Closed: return "Closed";
-        default:                    return "Unknown";
+        default: return "Unknown";
     }
 }
 
@@ -113,13 +85,13 @@ inline std::string toString(AccountCurrency currency) {
         case AccountCurrency::RUB: return "RUB";
         case AccountCurrency::EUR: return "EUR";
         case AccountCurrency::CNY: return "CNY";
-        default:                   return "Unknown";
+        default: return "Unknown";
     }
 }
 
 // Чтобы можно было писать: out << std::setw(8) << currency
-inline std::ostream& operator<<(std::ostream& out, AccountType type)         { return out << toString(type); }
-inline std::ostream& operator<<(std::ostream& out, AccountStatus status)     { return out << toString(status); }
+inline std::ostream& operator<<(std::ostream& out, AccountType type) { return out << toString(type); }
+inline std::ostream& operator<<(std::ostream& out, AccountStatus status) { return out << toString(status); }
 inline std::ostream& operator<<(std::ostream& out, AccountCurrency currency) { return out << toString(currency); }
 
 // Класс BaseAccount
@@ -134,8 +106,7 @@ private:
     AccountStatus   status{AccountStatus::Active};  // Статус счета
 
 protected:
-    // Сюда наследники кладут СВОИ поля. У базового класса своих дополнительных
-    // полей нет, поэтому методы пустые.
+    // Сюда наследники кладут СВОИ поля. У базового класса своих дополнительных полей нет, поэтому методы пустые
     virtual void readExtra(std::istream&) {}               // чтение из файла
     virtual void writeExtra(std::ostream&) const {}        // запись в файл (начинать с пробела)
     virtual void printExtra(std::ostream&) const {}        // вывод в консоль
@@ -146,8 +117,7 @@ public:
     // Тип счёта задаётся самим классом-наследником, поэтому сеттера setType() нет.
     virtual AccountType getType() const noexcept = 0;
 
-    // Нижний предел баланса. У дебетового и депозитного счёта это 0,
-    // кредитный счёт переопределяет метод и возвращает отрицательный лимит.
+    // Нижний предел баланса. У дебетового и депозитного счёта это 0, кредитный счёт переопределяет метод и возвращает отрицательный лимит.
     virtual double getMinBalance() const noexcept { return 0.0; }
 
     // Геттеры
@@ -199,9 +169,8 @@ public:
         status = _status;
     }
 
-    // ---- Чтение из файла ----------------------------------------------------
-    // Читает поля счёта ПОСЛЕ типа (тип уже прочитал Bank::load):
-    //     id владелец баланс валюта статус id_услуги + поля наследника
+    // Чтение из файла
+    // Читает поля счёта после типа (тип уже прочитал Bank::load)
     virtual std::istream& read(std::istream& in) {
         std::string name;
         double bal;
@@ -238,9 +207,8 @@ public:
         return in;
     }
 
-    // ---- Запись в файл ------------------------------------------------------
-    // Пишет счёт вместе с типом, без перевода строки в конце:
-    //     тип id владелец баланс валюта статус id_услуги + поля наследника
+    // Запись в файл
+    // Пишет счёт вместе с типом, без перевода строки в конце
     virtual std::ostream& write(std::ostream& out) const {
         auto oldFlags = out.flags();          // запоминаем настройки потока,
         auto oldPrecision = out.precision();  // чтобы вернуть их обратно
@@ -262,8 +230,7 @@ public:
         return out;
     }
 
-    // ---- Вывод в консоль ----------------------------------------------------
-    // Одна строка, без перевода строки в конце.
+    // Вывод в консоль
     virtual std::ostream& print(std::ostream& out) const {
         auto oldFlags = out.flags();
         auto oldPrecision = out.precision();
@@ -271,7 +238,7 @@ public:
         out << std::left << std::fixed << std::setprecision(2)
             << "Type " << std::setw(8) << getType()
             << "| Account ID " << std::setw(6) << accountID
-            << "| Owner Name " << ownerName << " "   // без setw: он считает байты, а кириллица в UTF-8 занимает 2 байта на букву
+            << "| Owner Name " << ownerName << " "   // без setw: он считает байты, а кириллица занимает 2 байта на букву
             << "| Balance " << std::setw(12) << balance
             << "| Currency " << std::setw(5) << currency
             << "| Status " << std::setw(8) << status
@@ -284,14 +251,12 @@ public:
     }
 };
 
-// ---------------------------------------------------------------------------
-//  Операторы потоков
-// ---------------------------------------------------------------------------
+// Операторы потоков
 inline std::ostream& operator<<(std::ostream& out, const BaseAccount& s) {
     return s.print(out);
 }
 
-// Нужен, чтобы std::copy и ostream_iterator умели печатать shared_ptr<BaseAccount>
+// чтобы std::copy и ostream_iterator умели печатать shared_ptr<BaseAccount>
 inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<BaseAccount>& ptr) {
     if (ptr) ptr->print(out);
     else out << "<null account>"; // защита от пустого указателя

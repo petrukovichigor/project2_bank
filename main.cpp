@@ -93,6 +93,20 @@ int main() {
 		}
 		bank.save(catalogOut, accountsOut);
 		std::cout << "\n=== 10. Сохранено в data/catalog_out.txt и data/bank_out.txt ===\n";
+		// ЭКСПЕРИМЕНТАЛЬНЫЙ БЛОК (только для демонстрации).
+		// Показывает собственное исключение LimitExceededException из Exceptions.h:
+		// открываем счета, пока банк не дойдет до лимита MAX_ACCOUNTS, и ловим именно его.
+		// К основной логике программы не относится.
+		std::cout << "\n=== 11. Эксперимент: собственное исключение ===\n";
+		try {
+			while (true) {
+				bank.openAccount("Лимитов Лим", 1, 0);
+			}
+		}
+		catch (const LimitExceededException& e) {
+			std::cout << "Поймано LimitExceededException: " << e.what() << "\n";
+			std::cout << "Открытых счетов: " << bank.getOpenSize() << " из " << Bank::MAX_ACCOUNTS << "\n";
+		}
 	}
 	catch (const std::exception& e) {
 		std::cerr << "Ошибка: " << e.what() << "\n";

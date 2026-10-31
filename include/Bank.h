@@ -64,32 +64,26 @@ public:
     void load(std::istream&, std::istream&);
 };
 
-int Bank::getNextID() const
-{
+int Bank::getNextID() const {
     if (accounts.empty()) return FIRST_ACCOUNT_ID;
-
     auto last = std::max_element(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getAccountID() < b->getAccountID(); });
     return (*last)->getAccountID() + 1;
 }
 
-long Bank::getOpenSize() const
-{
+long Bank::getOpenSize() const {
     return std::count_if(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a) { return a->getStatus() != AccountStatus::Closed; });
 }
 
 // Добавляет услугу в каталог банка
-void Bank::addService(const std::shared_ptr<BankService>& service)
-{
+void Bank::addService(const std::shared_ptr<BankService>& service) {
     catalog.add(service);
 }
 
 // Удаляет услугу из каталога, если по ней нет открытых счетов
-void Bank::removeService(int serviceID)
-{
+void Bank::removeService(int serviceID) {
     bool used = std::any_of(accounts.begin(), accounts.end(), [serviceID](std::shared_ptr<BaseAccount> a) { return a->getServiceID() == serviceID && a->getStatus() != AccountStatus::Closed; });
 
-    if (used)
-    {
+    if (used) {
         throw std::invalid_argument("Нельзя удалить услугу: по ней открыты счета!");
     }
     catalog.remove(serviceID);
@@ -97,11 +91,10 @@ void Bank::removeService(int serviceID)
 
 // Открывает счет клиенту по услуге из каталога. Возвращает ID нового счета.
 // Все проверки идут ДО добавления в банк, поэтому при ошибке банк не меняется.
-int Bank::openAccount(const std::string& owner, int serviceID, double startBalance)
-{
-    if (getOpenSize() >= MAX_ACCOUNTS)
-    {
-        throw std::length_error("Превышен лимит открытых счетов в банке!");
+int Bank::openAccount(const std::string& owner, int serviceID, double startBalance) {
+    if (getOpenSize() >= MAX_ACCOUNTS) {
+        // Показываю экспериментальное исключение из класса Exceptions.h
+        throw LimitExceededException("Превышен лимит открытых счетов в банке!");
     }
 
     std::shared_ptr<BankService> service = catalog.findById(serviceID);
