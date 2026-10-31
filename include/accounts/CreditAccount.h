@@ -25,9 +25,6 @@
 #pragma once
 #include "../Headers.h"
 
-#include <iostream>
-#include <stdexcept>
-
 class CreditAccount : public BaseAccount {
 private:
     double creditLimit{};  // Кредитный лимит: насколько можно уйти в минус (>= 0)

@@ -3,7 +3,7 @@
 int main() {
 	SetConsoleCP(65001);
 	SetConsoleOutputCP(65001);
-	std::ifstream file("input.txt");
+	std::ifstream file("data/input.txt");
 	if (!file) {
 		std::cerr << "Ошибка открытия input.txt\n";
 		return 1;
@@ -21,7 +21,7 @@ int main() {
 			case AccountType::Credit: account = std::make_shared<CreditAccount>(); break;
 			case AccountType::Deposit: account = std::make_shared<DepositAccount>(); break;
 			default:
-				std::cerr << "��������������: ����������� ��� ������� (" << typeInt << ")\n";
+				std::cerr << "???" << typeInt << ")\n";
 				continue;
 		}
 
