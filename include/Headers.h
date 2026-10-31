@@ -17,5 +17,6 @@
 #include "accounts/CreditAccount.h"
 #include "catalog/BankService.h"
 #include "catalog/ServiceCatalog.h"
+#include "Bank.h"
 
 #include <windows.h>

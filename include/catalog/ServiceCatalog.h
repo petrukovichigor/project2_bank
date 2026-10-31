@@ -35,14 +35,6 @@
 #pragma once
 #include "../Headers.h"
 
-#include <algorithm>
-#include <cstddef>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <stdexcept>
-#include <vector>
-
 class ServiceCatalog {
 private:
     std::vector<std::shared_ptr<BankService>> services;
