@@ -3,11 +3,6 @@
 // передаем управление меню. Вся логика лежит в Bank, весь ввод/вывод в Menu.
 
 #include "include/Headers.h"
-#include "include/Bank.h"
-#include "include/Menu.h"
-
-#include <fstream>
-#include <iostream>
 
 int main() {
 	SetConsoleCP(65001);
