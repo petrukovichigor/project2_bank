@@ -101,7 +101,6 @@ private:
     double balance{};          // Текущий баланс
     int accountID{};           // ID счета
     int serviceID{};           // ID услуги из ServiceCatalog, по которой открыт счет
-    // std::string openDate{}; // TODO: дата открытия счета (сделать через <chrono>)
     AccountCurrency currency{AccountCurrency::BYN}; // Валюта счета
     AccountStatus   status{AccountStatus::Active};  // Статус счета
 
@@ -208,7 +207,6 @@ public:
     }
 
     // Запись в файл
-    // Пишет счёт вместе с типом, без перевода строки в конце
     virtual std::ostream& write(std::ostream& out) const {
         auto oldFlags = out.flags();          // запоминаем настройки потока,
         auto oldPrecision = out.precision();  // чтобы вернуть их обратно

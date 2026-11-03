@@ -19,5 +19,6 @@
 #include "catalog/ServiceCatalog.h"
 #include "Exceptions.h"
 #include "Bank.h"
+#include "Menu.h"
 
 #include <windows.h>
