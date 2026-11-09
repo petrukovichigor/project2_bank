@@ -12,7 +12,6 @@ add_executable(BankProject
         include/Headers.h
         include/catalog/ServiceCatalog.h
         include/Bank.h
-        include/Exceptions.h
         include/catalog/BankService.h
         include/Menu.h
 )

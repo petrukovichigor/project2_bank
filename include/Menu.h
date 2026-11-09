@@ -49,25 +49,21 @@ public:
 // ===========================================================================
 
 // Читает строку целиком (с пробелами). Если ввод закончился, бросает исключение.
-std::string Menu::readLine(const std::string& prompt) const
-{
+std::string Menu::readLine(const std::string& prompt) const {
     std::cout << prompt;
     std::string line;
-    if (!std::getline(std::cin, line))
-    {
+    if (!std::getline(std::cin, line)) {
         throw std::runtime_error("Ввод прерван!");
     }
     // на Windows в конце строки может остаться '\r'
-    if (!line.empty() && line.back() == '\r')
-    {
+    if (!line.empty() && line.back() == '\r') {
         line.pop_back();
     }
     return line;
 }
 
 // Читает целое число. Буквы, пустая строка или лишние символы дают исключение.
-int Menu::readInt(const std::string& prompt) const
-{
+int Menu::readInt(const std::string& prompt) const {
     std::istringstream in(readLine(prompt));
     int value;
     if (!(in >> value) || !(in >> std::ws).eof())
@@ -78,8 +74,7 @@ int Menu::readInt(const std::string& prompt) const
 }
 
 // Читает число с точкой (например 12.5)
-double Menu::readDouble(const std::string& prompt) const
-{
+double Menu::readDouble(const std::string& prompt) const {
     std::istringstream in(readLine(prompt));
     double value;
     if (!(in >> value) || !(in >> std::ws).eof())
@@ -89,8 +84,7 @@ double Menu::readDouble(const std::string& prompt) const
     return value;
 }
 
-AccountType Menu::readType() const
-{
+AccountType Menu::readType() const {
     int number = readInt("Тип счета (0 - Debit, 1 - Credit, 2 - Deposit): ");
     if (number < 0 || number > static_cast<int>(AccountType::Deposit))
     {
@@ -99,8 +93,7 @@ AccountType Menu::readType() const
     return static_cast<AccountType>(number);
 }
 
-AccountCurrency Menu::readCurrency() const
-{
+AccountCurrency Menu::readCurrency() const {
     int number = readInt("Валюта (0 - BYN, 1 - USD, 2 - RUB, 3 - EUR, 4 - CNY): ");
     if (number < 0 || number > static_cast<int>(AccountCurrency::CNY))
     {
@@ -113,8 +106,7 @@ AccountCurrency Menu::readCurrency() const
 //  Вывод
 // ===========================================================================
 
-void Menu::printMainMenu() const
-{
+void Menu::printMainMenu() const {
     std::cout << "\n========== БАНК ==========\n"
         << "1. Каталог услуг\n"
         << "2. Банк (открытые счета)\n"
@@ -124,8 +116,7 @@ void Menu::printMainMenu() const
         << "6. Выход\n";
 }
 
-void Menu::printServices(const std::vector<std::shared_ptr<BankService>>& services) const
-{
+void Menu::printServices(const std::vector<std::shared_ptr<BankService>>& services) const {
     if (services.empty())
     {
         std::cout << "\nНичего не найдено\n";
@@ -136,8 +127,7 @@ void Menu::printServices(const std::vector<std::shared_ptr<BankService>>& servic
 }
 
 // Печатает "текст: сумма" с двумя знаками после запятой
-void Menu::printMoney(const std::string& text, double value) const
-{
+void Menu::printMoney(const std::string& text, double value) const {
     auto oldFlags = std::cout.flags();
     auto oldPrecision = std::cout.precision();
 
@@ -151,16 +141,12 @@ void Menu::printMoney(const std::string& text, double value) const
 //  Главный цикл
 // ===========================================================================
 
-void Menu::run()
-{
-    while (true)
-    {
+void Menu::run() {
+    while (true) {
         printMainMenu();
-        try
-        {
+        try {
             int choice = readInt("Выбор: ");
-            switch (choice)
-            {
+            switch (choice) {
                 case 1: catalogMenu(); break;
                 case 2: bankMenu(); break;
                 case 3: limitsMenu(); break;
@@ -173,8 +159,7 @@ void Menu::run()
                     std::cout << "Нет такого пункта меню!\n";
             }
         }
-        catch (const std::exception& e)
-        {
+        catch (const std::exception& e) {
             std::cout << "Ошибка: " << e.what() << "\n";
             if (std::cin.eof()) return; // ввод закончился, продолжать нечем
         }
@@ -185,23 +170,19 @@ void Menu::run()
 //  1. Каталог услуг
 // ===========================================================================
 
-void Menu::catalogMenu()
-{
-    while (true)
-    {
+void Menu::catalogMenu() {
+    while (true) {
         std::cout << "\n--- Каталог услуг ---\n"
             << "1. Показать все услуги\n"
             << "2. Найти услугу по критериям\n"
             << "3. Добавить услугу\n"
             << "4. Удалить услугу\n"
             << "0. Назад\n";
-        try
-        {
+        try {
             int choice = readInt("Выбор: ");
             if (choice == 0) return;
 
-            switch (choice)
-            {
+            switch (choice) {
                 case 1:
                     std::cout << "\n";
                     bank.getCatalog().print(std::cout);
@@ -213,29 +194,25 @@ void Menu::catalogMenu()
                     std::cout << "Нет такого пункта меню!\n";
             }
         }
-        catch (const std::exception& e)
-        {
+        catch (const std::exception& e) {
             std::cout << "Ошибка: " << e.what() << "\n";
             if (std::cin.eof()) return;
         }
     }
 }
 
-void Menu::findServices()
-{
+void Menu::findServices() {
     std::cout << "Искать по: 1 - типу счета, 2 - валюте, 3 - процентной ставке\n";
     int choice = readInt("Выбор: ");
 
-    switch (choice)
-    {
+    switch (choice) {
         case 1:
             printServices(bank.getCatalog().findByType(readType()));
             break;
         case 2:
             printServices(bank.getCatalog().findByCurrency(readCurrency()));
             break;
-        case 3:
-        {
+        case 3: {
             double minRate = readDouble("Ставка от (%): ");
             double maxRate = readDouble("Ставка до (%): ");
             printServices(bank.getCatalog().findByRate(minRate, maxRate));
@@ -246,8 +223,7 @@ void Menu::findServices()
     }
 }
 
-void Menu::addService()
-{
+void Menu::addService() {
     std::shared_ptr<BankService> service = std::make_shared<BankService>();
 
     service->setID(readInt("ID услуги: "));
@@ -259,12 +235,10 @@ void Menu::addService()
     service->setMinBalance(readDouble("Минимальная сумма для открытия счета: "));
 
     // лимит нужен только кредиту, срок только депозиту
-    if (service->getType() == AccountType::Credit)
-    {
+    if (service->getType() == AccountType::Credit) {
         service->setCreditLimit(readDouble("Кредитный лимит: "));
     }
-    if (service->getType() == AccountType::Deposit)
-    {
+    if (service->getType() == AccountType::Deposit) {
         service->setTermMonths(readInt("Срок (месяцев): "));
     }
 
@@ -272,8 +246,7 @@ void Menu::addService()
     std::cout << "Услуга добавлена\n";
 }
 
-void Menu::removeService()
-{
+void Menu::removeService() {
     bank.removeService(readInt("ID услуги для удаления: "));
     std::cout << "Услуга удалена\n";
 }
@@ -282,10 +255,8 @@ void Menu::removeService()
 //  2. Банк (открытые счета)
 // ===========================================================================
 
-void Menu::bankMenu()
-{
-    while (true)
-    {
+void Menu::bankMenu() {
+    while (true) {
         std::cout << "\n--- Банк ---\n"
             << "1. Показать все счета\n"
             << "2. Открыть счет по услуге из каталога\n"
@@ -293,13 +264,11 @@ void Menu::bankMenu()
             << "4. Сортировка по балансу\n"
             << "5. Поиск по владельцу\n"
             << "0. Назад\n";
-        try
-        {
+        try {
             int choice = readInt("Выбор: ");
             if (choice == 0) return;
 
-            switch (choice)
-            {
+            switch (choice) {
                 case 1:
                     std::cout << "\nСчетов всего: " << bank.getSize()
                         << ", открытых: " << bank.getOpenSize() << "\n";
@@ -319,8 +288,7 @@ void Menu::bankMenu()
                     std::cout << "Нет такого пункта меню!\n";
             }
         }
-        catch (const std::exception& e)
-        {
+        catch (const std::exception& e) {
             std::cout << "Ошибка: " << e.what() << "\n";
             if (std::cin.eof()) return;
         }
@@ -336,16 +304,8 @@ void Menu::openAccount()
     int serviceID = readInt("ID услуги из каталога: ");
     double startBalance = readDouble("Начальная сумма: ");
 
-    try
-    {
-        int id = bank.openAccount(owner, serviceID, startBalance);
-        std::cout << "Счет открыт. ID счета: " << id << "\n" << bank.findById(id) << "\n";
-    }
-    catch (const LimitExceededException& e)
-    {
-        // собственное исключение: банк достиг лимита открытых счетов
-        std::cout << "Лимит банка: " << e.what() << "\n";
-    }
+    int id = bank.openAccount(owner, serviceID, startBalance);
+    std::cout << "Счет открыт. ID счета: " << id << "\n" << bank.findById(id) << "\n";
 }
 
 void Menu::closeAccount()

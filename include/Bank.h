@@ -62,42 +62,35 @@ void Bank::removeService(int serviceID) {
 // Все проверки идут ДО добавления в банк, поэтому при ошибке банк не меняется.
 int Bank::openAccount(const std::string& owner, int serviceID, double startBalance) {
     if (getOpenSize() >= MAX_ACCOUNTS) {
-        // Показываю экспериментальное исключение из класса Exceptions.h
-        throw LimitExceededException("Превышен лимит открытых счетов в банке!");
+        throw std::length_error("Превышен лимит открытых счетов в банке!");
     }
 
     std::shared_ptr<BankService> service = catalog.findById(serviceID);
-    if (!service)
-    {
+    if (!service) {
         throw std::invalid_argument("Услуга с таким ID не найдена в каталоге!");
     }
-    if (startBalance < service->getMinBalance())
-    {
+    if (startBalance < service->getMinBalance()) {
         throw std::invalid_argument("Начальная сумма меньше минимальной для этой услуги!");
     }
 
     // Тип услуги определяет класс счета. Условия услуги копируются в счет.
     // У кредитного счета лимит ставим ДО баланса (от него зависит минимум баланса).
     std::shared_ptr<BaseAccount> account;
-    switch (service->getType())
-    {
-        case AccountType::Debit:
-        {
+    switch (service->getType()) {
+        case AccountType::Debit: {
             std::shared_ptr<DebitAccount> debit = std::make_shared<DebitAccount>();
             debit->setMonthlyFee(service->getMonthlyFee());
             account = debit;
             break;
         }
-        case AccountType::Credit:
-        {
+        case AccountType::Credit: {
             std::shared_ptr<CreditAccount> credit = std::make_shared<CreditAccount>();
             credit->setCreditLimit(service->getCreditLimit());
             credit->setInterestRate(service->getInterestRate());
             account = credit;
             break;
         }
-        case AccountType::Deposit:
-        {
+        case AccountType::Deposit: {
             std::shared_ptr<DepositAccount> deposit = std::make_shared<DepositAccount>();
             deposit->setInterestRate(service->getInterestRate());
             deposit->setTermMonths(service->getTermMonths());
@@ -120,19 +113,15 @@ int Bank::openAccount(const std::string& owner, int serviceID, double startBalan
 
 // Закрывает счет: остаток выплачивается клиенту (возвращается), статус Closed.
 // Счет с долгом закрыть нельзя.
-double Bank::closeAccount(int accountID)
-{
+double Bank::closeAccount(int accountID) {
     std::shared_ptr<BaseAccount> account = findById(accountID);
-    if (!account)
-    {
+    if (!account) {
         throw std::invalid_argument("Счет с таким ID не найден!");
     }
-    if (account->getStatus() == AccountStatus::Closed)
-    {
+    if (account->getStatus() == AccountStatus::Closed) {
         throw std::invalid_argument("Счет уже закрыт!");
     }
-    if (account->getBalance() < 0)
-    {
+    if (account->getBalance() < 0) {
         throw std::invalid_argument("Нельзя закрыть счет с долгом!");
     }
 
@@ -143,28 +132,23 @@ double Bank::closeAccount(int accountID)
 }
 
 // Счет по ID или nullptr, если такого нет
-std::shared_ptr<BaseAccount> Bank::findById(int accountID) const
-{
+std::shared_ptr<BaseAccount> Bank::findById(int accountID) const {
     auto it = std::find_if(accounts.begin(), accounts.end(), [accountID](std::shared_ptr<BaseAccount> a) { return a->getAccountID() == accountID; });
-
     if (it == accounts.end()) return nullptr;
     return *it;
 }
 
 // Поиск счетов по владельцу: имя содержит введенный текст
-void Bank::findOwner(const std::string& name) const
-{
+void Bank::findOwner(const std::string& name) const {
     std::vector<std::shared_ptr<BaseAccount>> found;
     std::copy_if(accounts.begin(), accounts.end(), std::back_inserter(found), [&name](std::shared_ptr<BaseAccount> a) { return a->getOwnerName().find(name) != std::string::npos; });
 
-    if (found.empty())
-    {
-        std::cout << "\nNo accounts found!\n";
+    if (found.empty()) {
+        std::cout << "\nНичего не найдено!\n";
         return;
     }
-    else
-    {
-        std::cout << "\nAccounts suitable for criteria:\n";
+    else {
+        std::cout << "\nНайденные счета:\n";
         std::copy(found.begin(), found.end(), std::ostream_iterator<std::shared_ptr<BaseAccount>>(std::cout, "\n"));
     }
 }
@@ -181,8 +165,7 @@ double Bank::calculateInterest(int accountID, int months) const
 }
 
 // Ограничение по общему числу счетов: открытых не больше MAX_ACCOUNTS
-bool Bank::checkLimits() const
-{
+bool Bank::checkLimits() const {
     return getOpenSize() <= MAX_ACCOUNTS;
 }
 
@@ -192,63 +175,52 @@ void Bank::printViolations(std::ostream& out) const
 {
     bool found = false;
 
-    if (!checkLimits())
-    {
+    if (!checkLimits()) {
         out << "Limit exceeded: " << getOpenSize() << " open accounts, maximum is " << MAX_ACCOUNTS << "\n";
         found = true;
     }
 
-    for (const auto& account : accounts)
-    {
+    for (const auto& account : accounts) {
         if (account->getStatus() == AccountStatus::Closed) continue;
 
         std::shared_ptr<BankService> service = catalog.findById(account->getServiceID());
-        if (!service)
-        {
+        if (!service) {
             out << "Account " << account->getAccountID() << ": service " << account->getServiceID() << " not found in catalog\n";
             found = true;
             continue;
         }
-        if (service->getType() != account->getType())
-        {
+        if (service->getType() != account->getType()) {
             out << "Account " << account->getAccountID() << ": type does not match service " << service->getID() << "\n";
             found = true;
         }
-        if (service->getCurrency() != account->getCurrency())
-        {
+        if (service->getCurrency() != account->getCurrency()) {
             out << "Account " << account->getAccountID() << ": currency does not match service " << service->getID() << "\n";
             found = true;
         }
     }
 
-    if (!found)
-    {
+    if (!found) {
         out << "No violations found\n";
     }
 }
 
-void Bank::print(std::ostream& out) const
-{
+void Bank::print(std::ostream& out) const {
     std::copy(accounts.begin(), accounts.end(), std::ostream_iterator<std::shared_ptr<BaseAccount>>(out, "\n"));
 }
 
-void Bank::sortName()
-{
+void Bank::sortName() {
     std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getOwnerName() < b->getOwnerName(); });
 }
 
-void Bank::sortBalance()
-{
+void Bank::sortBalance() {
     std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) { return a->getBalance() < b->getBalance(); });
 }
 
 // Сохраняет каталог услуг и счета в два потока (два файла)
-void Bank::save(std::ostream& catalogOut, std::ostream& accountsOut) const
-{
+void Bank::save(std::ostream& catalogOut, std::ostream& accountsOut) const {
     catalog.save(catalogOut);
 
-    for (const auto& account : accounts)
-    {
+    for (const auto& account : accounts) {
         account->write(accountsOut);
         accountsOut << '\n';
     }
@@ -256,19 +228,16 @@ void Bank::save(std::ostream& catalogOut, std::ostream& accountsOut) const
 
 // Загружает каталог и счета. Сначала читается каталог, потом счета.
 // Читаем во временные объекты: если файл повреждён, банк остаётся прежним.
-void Bank::load(std::istream& catalogIn, std::istream& accountsIn)
-{
+void Bank::load(std::istream& catalogIn, std::istream& accountsIn) {
     ServiceCatalog newCatalog;
     newCatalog.load(catalogIn);
 
     std::vector<std::shared_ptr<BaseAccount>> newAccounts;
     int typeInt;
-    while (accountsIn >> typeInt)
-    {
+    while (accountsIn >> typeInt) {
         std::shared_ptr<BaseAccount> account;
 
-        switch (static_cast<AccountType>(typeInt))
-        {
+        switch (static_cast<AccountType>(typeInt)) {
             case AccountType::Debit:   account = std::make_shared<DebitAccount>(); break;
             case AccountType::Credit:  account = std::make_shared<CreditAccount>(); break;
             case AccountType::Deposit: account = std::make_shared<DepositAccount>(); break;
@@ -279,16 +248,14 @@ void Bank::load(std::istream& catalogIn, std::istream& accountsIn)
         accountsIn >> *account;
 
         bool duplicate = std::any_of(newAccounts.begin(), newAccounts.end(), [&account](std::shared_ptr<BaseAccount> a) { return a->getAccountID() == account->getAccountID(); });
-        if (duplicate)
-        {
+        if (duplicate) {
             throw std::runtime_error("Ошибка чтения файла: два счета с одинаковым ID!");
         }
         newAccounts.push_back(account);
     }
 
     // цикл мог закончиться не концом файла, а мусором вместо типа счета
-    if (!accountsIn.eof())
-    {
+    if (!accountsIn.eof()) {
         throw std::runtime_error("Ошибка чтения файла: неверный формат записи счета!");
     }
 

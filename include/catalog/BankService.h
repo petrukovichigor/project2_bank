@@ -180,15 +180,15 @@ public:
         auto oldPrecision = out.precision();
 
         out << std::left << std::fixed << std::setprecision(2)
-            << "Service ID " << std::setw(4) << id
-            << "| " << name << " "   // без setw: он считает байты, а кириллица занимает 2 байта на букву
-            << "| Type " << std::setw(8) << type
-            << "| Currency " << std::setw(5) << currency
-            << "| Rate " << interestRate << "% "
-            << "| Fee " << monthlyFee << " "
-            << "| Min " << minBalance << " "
-            << "| Credit limit " << creditLimit << " "
-            << "| Term " << termMonths << " mo";
+            << "ID: " << std::setw(2) << id << " | "
+            << std::setw(7) << type << " | "
+            << currency << " | "
+            << "Rate: " << std::setw(5) << interestRate << "% | "
+            << "Fee: " << std::setw(5) << monthlyFee << " | "
+            << "Min: " << std::setw(7) << minBalance << " | "
+            << "Limit: " << std::setw(8) << creditLimit << " | "
+            << "Term: " << std::setw(2) << termMonths << " mo | "
+            << name;
 
         out.flags(oldFlags);
         out.precision(oldPrecision);
