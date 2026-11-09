@@ -17,7 +17,6 @@
 #include "accounts/CreditAccount.h"
 #include "catalog/BankService.h"
 #include "catalog/ServiceCatalog.h"
-#include "Exceptions.h"
 #include "Bank.h"
 #include "Menu.h"
 

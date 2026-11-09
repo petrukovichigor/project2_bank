@@ -16,14 +16,13 @@ int main() {
 
 	try {
 		bank.load(catalogFile, accountsFile);
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception &e) {
 		std::cerr << "Ошибка загрузки данных: " << e.what() << "\n";
 		return 1;
 	}
 
 	std::cout << "Загружено услуг: " << bank.getCatalog().size()
-		<< ", счетов: " << bank.getSize() << "\n";
+			<< ", счетов: " << bank.getSize() << "\n";
 
 	// Запуск меню: работает, пока пользователь не выберет "Выход"
 	Menu menu(bank);
