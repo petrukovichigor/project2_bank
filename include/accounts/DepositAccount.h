@@ -26,8 +26,8 @@ protected:
 
 	// Вывод своих полей в консоль (вызывается из BaseAccount::print)
 	void printExtra(std::ostream &out) const override {
-		out << " | Rate " << interestRate << "%"
-				<< " | Term " << termMonths << " mo";
+		out << "Rate: " << std::right << std::setw(5) << interestRate << std::left << "% | "
+				<< "Term: " << std::right << std::setw(2) << termMonths << std::left << " mo | ";
 	}
 
 public:

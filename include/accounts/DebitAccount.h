@@ -23,7 +23,7 @@ protected:
 
 	// Вывод своего поля в консоль (вызывается из BaseAccount::print)
 	void printExtra(std::ostream &out) const override {
-		out << " | Fee " << monthlyFee;
+		out << "Fee: " << std::right << std::setw(5) << monthlyFee << std::left << " | ";
 	}
 
 public:

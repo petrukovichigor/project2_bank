@@ -200,15 +200,13 @@ public:
 		auto oldPrecision = out.precision();
 
 		out << std::left << std::fixed << std::setprecision(2)
-				<< "Type " << std::setw(8) << getType()
-				<< "| Account ID " << std::setw(6) << accountID
-				<< "| Owner Name " << ownerName << " "
-				// без setw: он считает байты, а кириллица занимает 2 байта на букву
-				<< "| Balance " << std::setw(12) << balance
-				<< "| Currency " << std::setw(5) << currency
-				<< "| Status " << std::setw(8) << status
-				<< "| Service ID " << serviceID;
-		printExtra(out); // поля наследника
+				<< "ID: " << std::setw(4) << accountID << " | "
+				<< std::setw(7) << getType() << " | "
+				<< currency << " | "
+				<< std::setw(6) << status << " | "
+				<< "Bal: " << std::right << std::setw(9) << balance << std::left << " | ";
+		printExtra(out); // поля наследника (каждое заканчивается на " | ")
+		out << ownerName;
 
 		out.flags(oldFlags);
 		out.precision(oldPrecision);
