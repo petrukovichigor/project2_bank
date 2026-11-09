@@ -198,34 +198,34 @@ void Bank::printViolations(std::ostream &out) const {
 	bool found = false;
 
 	if (!checkLimits()) {
-		out << "Limit exceeded: " << getOpenSize() << " open accounts, maximum is " << MAX_ACCOUNTS << "\n";
+		out << "Превышен лимит: открытых счетов " << getOpenSize() << ", максимум " << MAX_ACCOUNTS << "\n";
 		found = true;
 	}
 
-	for (const auto &account: accounts) {
+	for (const auto &account : accounts) {
 		if (account->getStatus() == AccountStatus::Closed) continue;
 
 		std::shared_ptr<BankService> service = catalog.findById(account->getServiceID());
 		if (!service) {
-			out << "Account " << account->getAccountID() << ": service " << account->getServiceID() <<
-					" not found in catalog\n";
+			out << "Счет " << account->getAccountID() << ": услуга " << account->getServiceID() <<
+					" не найдена в каталоге\n";
 			found = true;
 			continue;
 		}
 		if (service->getType() != account->getType()) {
-			out << "Account " << account->getAccountID() << ": type does not match service " << service->getID() <<
+			out << "Счет " << account->getAccountID() << ": тип не совпадает с услугой " << service->getID() <<
 					"\n";
 			found = true;
 		}
 		if (service->getCurrency() != account->getCurrency()) {
-			out << "Account " << account->getAccountID() << ": currency does not match service " << service->getID() <<
+			out << "Счет " << account->getAccountID() << ": валюта не совпадает с услугой " << service->getID() <<
 					"\n";
 			found = true;
 		}
 	}
 
 	if (!found) {
-		out << "No violations found\n";
+		out << "Нарушений не найдено\n";
 	}
 }
 
