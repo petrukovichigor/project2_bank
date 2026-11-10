@@ -253,7 +253,7 @@ void Bank::save(std::ostream &catalogOut, std::ostream &accountsOut) const {
 }
 
 // Загружает каталог и счета. Сначала читается каталог, потом счета.
-// Читаем во временные объекты: если файл повреждён, банк остаётся прежним.
+// Читаем во временные объекты: если файл повреждён, банк остаётся прежним. Потом move
 void Bank::load(std::istream &catalogIn, std::istream &accountsIn) {
 	ServiceCatalog newCatalog;
 	newCatalog.load(catalogIn);
@@ -274,15 +274,7 @@ void Bank::load(std::istream &catalogIn, std::istream &accountsIn) {
 				throw std::runtime_error("Ошибка чтения файла: неизвестный тип счета!");
 		}
 
-		accountsIn >> *account;
-
-		bool duplicate = std::any_of(newAccounts.begin(), newAccounts.end(),
-		                             [&account](std::shared_ptr<BaseAccount> a) {
-			                             return a->getAccountID() == account->getAccountID();
-		                             });
-		if (duplicate) {
-			throw std::runtime_error("Ошибка чтения файла: два счета с одинаковым ID!");
-		}
+		accountsIn >> *account; //account это указатель, разыменовываем
 		newAccounts.push_back(account);
 	}
 

@@ -343,7 +343,6 @@ void Menu::openAccount() {
 	std::cout << "\n";
 	bank.getCatalog().print(std::cout); // Показываем доступные услуги
 
-	// Все эти методы теперь гарантированно вернут ПРАВИЛЬНЫЕ данные на месте!
 	std::string owner = readLine("\nФИО владельца: ");
 	int serviceID = readInt("ID услуги из каталога: ");
 	double startBalance = readDouble("Начальная сумма: ");

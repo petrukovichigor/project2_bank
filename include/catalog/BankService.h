@@ -180,16 +180,16 @@ public:
 		auto oldFlags = out.flags();
 		auto oldPrecision = out.precision();
 
-		out << std::left << std::fixed << std::setprecision(2)
-				<< "ID: " << std::setw(2) << id << " | "
-				<< std::setw(7) << type << " | "
-				<< currency << " | "
-				<< "Rate: " << std::setw(5) << interestRate << "% | "
-				<< "Fee: " << std::setw(5) << monthlyFee << " | "
-				<< "Min: " << std::setw(7) << minBalance << " | "
-				<< "Limit: " << std::setw(8) << creditLimit << " | "
-				<< "Term: " << std::setw(2) << termMonths << " mo | "
-				<< name;
+		out << std::fixed << std::setprecision(2)
+			<< "ID: " << std::right << std::setw(2) << id << " | "
+			<< std::left << std::setw(7) << type << " | "
+			<< currency << " | "
+			<< "Rate: " << std::right << std::setw(5) << interestRate << "% | "
+			<< "Fee: " << std::right << std::setw(5) << monthlyFee << " | "
+			<< "Min: " << std::right << std::setw(7) << minBalance << " | "
+			<< "Limit: " << std::right << std::setw(8) << creditLimit << " | "
+			<< "Term: " << std::right << std::setw(2) << termMonths << " mo | "
+			<< std::left << name;
 
 		out.flags(oldFlags);
 		out.precision(oldPrecision);

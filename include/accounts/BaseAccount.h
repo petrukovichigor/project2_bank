@@ -52,7 +52,7 @@ inline std::string toString(AccountCurrency currency) {
 	}
 }
 
-// Чтобы можно было писать: out << std::setw(8) << currency
+// Чтобы можно было писать: out << currency
 inline std::ostream &operator<<(std::ostream &out, AccountType type) { return out << toString(type); }
 inline std::ostream &operator<<(std::ostream &out, AccountStatus status) { return out << toString(status); }
 inline std::ostream &operator<<(std::ostream &out, AccountCurrency currency) { return out << toString(currency); }
@@ -148,10 +148,10 @@ public:
 		}
 
 		// 2. номера валюты и статуса должны существовать в перечислениях
-		if (currencyNumber < 0 || currencyNumber > static_cast<int>(AccountCurrency::CNY)) {
+		if (currencyNumber < 0 || currencyNumber > 4) {
 			throw std::runtime_error("Ошибка чтения файла: неизвестная валюта!");
 		}
-		if (statusNumber < 0 || statusNumber > static_cast<int>(AccountStatus::Closed)) {
+		if (statusNumber < 0 || statusNumber > 2) {
 			throw std::runtime_error("Ошибка чтения файла: неизвестный статус счета!");
 		}
 
@@ -174,8 +174,8 @@ public:
 
 	// Запись в файл
 	virtual std::ostream &write(std::ostream &out) const {
-		auto oldFlags = out.flags(); // запоминаем настройки потока,
-		auto oldPrecision = out.precision(); // чтобы вернуть их обратно
+		auto oldFlags = out.flags(); // std::fixed и std::setprecision изменяют глобальное состояние потока.
+		auto oldPrecision = out.precision(); // если не вернуть старые настройки в конце метода, то весь последующий вывод в программе будет форматироваться так же, что может сломать отображение данных в других частях программы
 
 		std::string name = ownerName;
 		std::replace(name.begin(), name.end(), ' ', '_'); // ФИО одним словом
