@@ -74,39 +74,66 @@ std::string Menu::readLine(const std::string &prompt) const {
 
 // Читает целое число. Буквы, пустая строка или лишние символы дают исключение.
 int Menu::readInt(const std::string &prompt) const {
-	std::istringstream in(readLine(prompt));
-	int value;
-	if (!(in >> value) || !(in >> std::ws).eof()) {
-		throw std::invalid_argument("Неверный ввод: ожидалось целое число!");
+	while (true) {
+		try {
+			std::istringstream in(readLine(prompt));
+			int value;
+			if (!(in >> value) || !(in >> std::ws).eof()) {
+				throw std::invalid_argument("Ожидалось целое число!");
+			}
+			return value; // Ввод успешен, возвращаем число и выходим
+		} catch (const std::exception &e) {
+			std::cout << "Ошибка: " << e.what() << " Пожалуйста, повторите ввод.\n";
+		}
 	}
-	return value;
 }
 
 // Читает число с точкой (например 12.5)
 double Menu::readDouble(const std::string &prompt) const {
-	std::istringstream in(readLine(prompt));
-	double value;
-	if (!(in >> value) || !(in >> std::ws).eof()) {
-		throw std::invalid_argument("Неверный ввод: ожидалось число (дробная часть через точку)!");
+	while (true) {
+		try {
+			std::istringstream in(readLine(prompt));
+			double value;
+			if (!(in >> value) || !(in >> std::ws).eof()) {
+				throw std::invalid_argument("Ожидалось число с точкой (например, 12.5)!");
+			}
+			return value; // Ввод успешен, возвращаем число и выходим
+		} catch (const std::exception &e) {
+			std::cout << "Ошибка: " << e.what() << " Пожалуйста, повторите ввод.\n";
+		}
 	}
-	return value;
 }
 
+
 AccountType Menu::readType() const {
-	int number = readInt("Тип счета (0 - Debit, 1 - Credit, 2 - Deposit): ");
-	if (number < 0 || number > static_cast<int>(AccountType::Deposit)) {
-		throw std::invalid_argument("Неизвестный тип счета!");
+	while (true) {
+		try {
+			int number = readInt("Тип счета (0 - Debit, 1 - Credit, 2 - Deposit): ");
+			if (number < 0 || number > static_cast<int>(AccountType::Deposit)) {
+				throw std::invalid_argument("Неизвестный тип счета! Введите число от 0 до 2.");
+			}
+			return static_cast<AccountType>(number);
+		} catch (const std::exception &e) {
+			std::cout << "Ошибка: " << e.what() << "\n";
+		}
 	}
-	return static_cast<AccountType>(number);
 }
 
 AccountCurrency Menu::readCurrency() const {
-	int number = readInt("Валюта (0 - BYN, 1 - USD, 2 - RUB, 3 - EUR, 4 - CNY): ");
-	if (number < 0 || number > static_cast<int>(AccountCurrency::CNY)) {
-		throw std::invalid_argument("Неизвестная валюта!");
+	while (true) {
+		try {
+			int number = readInt("Валюта (0 - BYN, 1 - USD, 2 - RUB, 3 - EUR, 4 - CNY): ");
+			if (number < 0 || number > 4) {
+				// Исправленная скобочка
+				throw std::invalid_argument("Неизвестная валюта! Введите число от 0 до 4.");
+			}
+			return static_cast<AccountCurrency>(number);
+		} catch (const std::exception &e) {
+			std::cout << "Ошибка: " << e.what() << "\n";
+		}
 	}
-	return static_cast<AccountCurrency>(number);
 }
+
 
 // ===========================================================================
 //  Вывод
@@ -237,6 +264,7 @@ void Menu::findServices() {
 void Menu::addService() {
 	std::shared_ptr<BankService> service = std::make_shared<BankService>();
 
+	// Каждый шаг защищен изнутри методов ввода
 	service->setID(readInt("ID услуги: "));
 	service->setName(readLine("Название: "));
 	service->setType(readType());
@@ -245,7 +273,6 @@ void Menu::addService() {
 	service->setMonthlyFee(readDouble("Комиссия в месяц: "));
 	service->setMinBalance(readDouble("Минимальная сумма для открытия счета: "));
 
-	// лимит нужен только кредиту, срок только депозиту
 	if (service->getType() == AccountType::Credit) {
 		service->setCreditLimit(readDouble("Кредитный лимит: "));
 	}
@@ -253,8 +280,13 @@ void Menu::addService() {
 		service->setTermMonths(readInt("Срок (месяцев): "));
 	}
 
-	bank.addService(service);
-	std::cout << "Услуга добавлена\n";
+	// Финальная валидация услуги банком
+	try {
+		bank.addService(service);
+		std::cout << "Услуга добавлена\n";
+	} catch (const std::exception &e) {
+		std::cout << "\n[Ошибка валидации]: " << e.what() << "\nУслуга не добавлена.\n";
+	}
 }
 
 void Menu::removeService() {
@@ -309,14 +341,20 @@ void Menu::bankMenu() {
 
 void Menu::openAccount() {
 	std::cout << "\n";
-	bank.getCatalog().print(std::cout); // показываем, из чего можно выбрать
+	bank.getCatalog().print(std::cout); // Показываем доступные услуги
 
+	// Все эти методы теперь гарантированно вернут ПРАВИЛЬНЫЕ данные на месте!
 	std::string owner = readLine("\nФИО владельца: ");
 	int serviceID = readInt("ID услуги из каталога: ");
 	double startBalance = readDouble("Начальная сумма: ");
 
-	int id = bank.openAccount(owner, serviceID, startBalance);
-	std::cout << "Счет открыт. ID счета: " << id << "\n" << bank.findById(id) << "\n";
+	// Бизнес-проверка самого банка (хватает ли денег для открытия по этой услуге)
+	try {
+		int id = bank.openAccount(owner, serviceID, startBalance);
+		std::cout << "Счет открыт. ID счета: " << id << "\n" << bank.findById(id) << "\n";
+	} catch (const std::exception &e) {
+		std::cout << "\n[Ошибка банка]: " << e.what() << "\nОперация отменена. Возврат в подменю.\n";
+	}
 }
 
 void Menu::closeAccount() {
