@@ -119,7 +119,6 @@ public:
 
 		// 1. читаем все поля записи
 		if (!(in >> _id >> _name >> typeNumber >> currencyNumber >> rate >> fee >> minBal >> limit >> term)) {
-			in.clear(std::ios::failbit);
 			throw std::runtime_error("Ошибка чтения файла: неверная запись услуги!");
 		}
 
