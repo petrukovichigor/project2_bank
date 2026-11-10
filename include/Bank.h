@@ -3,7 +3,7 @@
 
 class Bank {
 private:
-	std::vector<std::shared_ptr<BaseAccount> > accounts;
+	std::vector<std::shared_ptr<BaseAccount>> accounts;
 	ServiceCatalog catalog;
 
 	int getNextID() const; // ID для нового счета: максимальный существующий + 1
@@ -48,26 +48,26 @@ public:
 int Bank::getNextID() const {
 	if (accounts.empty()) return FIRST_ACCOUNT_ID;
 	auto last = std::max_element(accounts.begin(), accounts.end(),
-	                             [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) {
+	                             [](const std::shared_ptr<BaseAccount> &a, const std::shared_ptr<BaseAccount> &b) {
 		                             return a->getAccountID() < b->getAccountID();
 	                             });
 	return (*last)->getAccountID() + 1;
 }
 
 long Bank::getOpenSize() const {
-	return std::count_if(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a) {
+	return std::count_if(accounts.begin(), accounts.end(), [](const std::shared_ptr<BaseAccount> &a) {
 		return a->getStatus() != AccountStatus::Closed;
 	});
 }
 
 // Добавляет услугу в каталог банка
-void Bank::addService(const std::shared_ptr<BankService> &service) {
-	catalog.add(service);
+void Bank::addService(const std::shared_ptr<BankService> &s) {
+	catalog.add(s);
 }
 
 // Удаляет услугу из каталога, если по ней нет открытых счетов
 void Bank::removeService(int serviceID) {
-	bool used = std::any_of(accounts.begin(), accounts.end(), [serviceID](std::shared_ptr<BaseAccount> a) {
+	bool used = std::any_of(accounts.begin(), accounts.end(), [serviceID](const std::shared_ptr<BaseAccount> &a) {
 		return a->getServiceID() == serviceID && a->getStatus() != AccountStatus::Closed;
 	});
 
@@ -152,7 +152,7 @@ double Bank::closeAccount(int accountID) {
 
 // Счет по ID или nullptr, если такого нет
 std::shared_ptr<BaseAccount> Bank::findById(int accountID) const {
-	auto it = std::find_if(accounts.begin(), accounts.end(), [accountID](std::shared_ptr<BaseAccount> a) {
+	auto it = std::find_if(accounts.begin(), accounts.end(), [accountID](const std::shared_ptr<BaseAccount> &a) {
 		return a->getAccountID() == accountID;
 	});
 	if (it == accounts.end()) return nullptr;
@@ -162,7 +162,7 @@ std::shared_ptr<BaseAccount> Bank::findById(int accountID) const {
 // Поиск счетов по владельцу: имя содержит введенный текст
 void Bank::findOwner(const std::string &name) const {
 	std::vector<std::shared_ptr<BaseAccount> > found;
-	std::copy_if(accounts.begin(), accounts.end(), std::back_inserter(found), [&name](std::shared_ptr<BaseAccount> a) {
+	std::copy_if(accounts.begin(), accounts.end(), std::back_inserter(found), [&name](const std::shared_ptr<BaseAccount> &a) {
 		return a->getOwnerName().find(name) != std::string::npos;
 	});
 
@@ -177,6 +177,8 @@ void Bank::findOwner(const std::string &name) const {
 
 // Дополнительная функция: проценты по депозитному счету за months месяцев
 double Bank::calculateInterest(int accountID, int months) const {
+	// Безопасное приведение типа умного указателя (от Base, который лежит в векторе accounts, к Deposit)
+	// возвращает рабочий указатель, если счет является вкладом, или nullptr, если тип счета другой.
 	std::shared_ptr<DepositAccount> deposit = std::dynamic_pointer_cast<DepositAccount>(findById(accountID));
 	if (!deposit) {
 		throw std::invalid_argument("Депозитный счет с таким ID не найден!");
@@ -231,13 +233,13 @@ void Bank::print(std::ostream &out) const {
 }
 
 void Bank::sortName() {
-	std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) {
+	std::sort(accounts.begin(), accounts.end(), [](const std::shared_ptr<BaseAccount> &a, const std::shared_ptr<BaseAccount> &b) {
 		return a->getOwnerName() < b->getOwnerName();
 	});
 }
 
 void Bank::sortBalance() {
-	std::sort(accounts.begin(), accounts.end(), [](std::shared_ptr<BaseAccount> a, std::shared_ptr<BaseAccount> b) {
+	std::sort(accounts.begin(), accounts.end(), [](const std::shared_ptr<BaseAccount> &a, const std::shared_ptr<BaseAccount> &b) {
 		return a->getBalance() < b->getBalance();
 	});
 }
@@ -258,7 +260,7 @@ void Bank::load(std::istream &catalogIn, std::istream &accountsIn) {
 	ServiceCatalog newCatalog;
 	newCatalog.load(catalogIn);
 
-	std::vector<std::shared_ptr<BaseAccount> > newAccounts;
+	std::vector<std::shared_ptr<BaseAccount>> newAccounts;
 	int typeInt;
 	while (accountsIn >> typeInt) {
 		std::shared_ptr<BaseAccount> account;

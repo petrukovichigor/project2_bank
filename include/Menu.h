@@ -124,7 +124,6 @@ AccountCurrency Menu::readCurrency() const {
 		try {
 			int number = readInt("Валюта (0 - BYN, 1 - USD, 2 - RUB, 3 - EUR, 4 - CNY): ");
 			if (number < 0 || number > 4) {
-				// Исправленная скобочка
 				throw std::invalid_argument("Неизвестная валюта! Введите число от 0 до 4.");
 			}
 			return static_cast<AccountCurrency>(number);

@@ -35,7 +35,9 @@ public:
 	std::shared_ptr<BankService> findById(int id) const {
 		auto it = std::find_if(services.begin(), services.end(),
 		                       [id](const std::shared_ptr<BankService> &s) { return s->getID() == id; });
-		return it == services.end() ? nullptr : *it;
+		if (it == services.end()) return nullptr;
+		return *it;
+
 	}
 
 	// Все услуги заданного типа счёта

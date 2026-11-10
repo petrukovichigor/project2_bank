@@ -204,7 +204,7 @@ public:
 				<< currency << " | "
 				<< std::setw(6) << status << " | "
 				<< "Bal: " << std::right << std::setw(9) << balance << std::left << " | ";
-		printExtra(out); // поля наследника (каждое заканчивается на " | ")
+		printExtra(out); // поля наследника (каждое заканчивается на |)
 		out << ownerName;
 
 		out.flags(oldFlags);
