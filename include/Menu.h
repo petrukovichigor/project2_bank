@@ -5,7 +5,6 @@ class Menu {
 private:
 	Bank &bank; // меню работает с банком, который создал main
 
-	// ---- ввод с проверкой: при неверном вводе бросают исключение ----
 	std::string readLine(const std::string &) const;
 
 	int readInt(const std::string &) const;
@@ -16,14 +15,12 @@ private:
 
 	AccountCurrency readCurrency() const;
 
-	// ---- вывод ----
 	void printMainMenu() const;
 
 	void printServices(const std::vector<std::shared_ptr<BankService> > &) const;
 
 	void printMoney(const std::string &, double) const;
 
-	// ---- подменю ----
 	void catalogMenu();
 
 	void bankMenu();
@@ -32,7 +29,6 @@ private:
 
 	void fileMenu();
 
-	// ---- действия ----
 	void findServices();
 
 	void addService();
@@ -52,9 +48,6 @@ private:
 	void interest();
 
 public:
-	static constexpr const char *CATALOG_FILE = "data/catalog.txt"; // файл каталога
-	static constexpr const char *ACCOUNTS_FILE = "data/bank.txt"; // файл счетов
-
 	Menu(Bank &_bank) : bank(_bank) {
 	}
 
@@ -63,9 +56,7 @@ public:
 	void run(); // главный цикл меню
 };
 
-// ===========================================================================
 //  Ввод
-// ===========================================================================
 
 // Читает строку целиком (с пробелами). Если ввод закончился, бросает исключение.
 std::string Menu::readLine(const std::string &prompt) const {
@@ -367,7 +358,7 @@ void Menu::limitsMenu() {
 
 void Menu::checkLimits() {
 	std::cout << "\nОткрытых счетов: " << bank.getOpenSize()
-			<< ", максимум: " << Bank::MAX_ACCOUNTS << "\n";
+			<< ", максимум: " << MAX_ACCOUNTS << "\n";
 
 	if (bank.checkLimits()) {
 		std::cout << "Ограничения соблюдены\n";

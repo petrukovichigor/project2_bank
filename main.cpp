@@ -7,10 +7,10 @@ int main() {
 	Bank bank;
 
 	// Загрузка данных при старте: сначала каталог услуг, потом счета
-	std::ifstream catalogFile(Menu::CATALOG_FILE);
-	std::ifstream accountsFile(Menu::ACCOUNTS_FILE);
+	std::ifstream catalogFile(CATALOG_FILE);
+	std::ifstream accountsFile(ACCOUNTS_FILE);
 	if (!catalogFile || !accountsFile) {
-		std::cerr << "Ошибка открытия " << Menu::CATALOG_FILE << " или " << Menu::ACCOUNTS_FILE << "\n";
+		std::cerr << "Ошибка открытия " << CATALOG_FILE << " или " << ACCOUNTS_FILE << "\n";
 		return 1;
 	}
 

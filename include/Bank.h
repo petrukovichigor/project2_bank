@@ -8,9 +8,6 @@ private:
 
 	int getNextID() const; // ID для нового счета: максимальный существующий + 1
 public:
-	static constexpr int MAX_ACCOUNTS = 20; // максимум открытых счетов в банке
-	static constexpr int FIRST_ACCOUNT_ID = 1001; // ID самого первого счета
-
 	Bank() = default;
 
 	~Bank() = default;

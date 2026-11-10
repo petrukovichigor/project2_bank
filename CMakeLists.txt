@@ -14,4 +14,5 @@ add_executable(BankProject
         include/Bank.h
         include/catalog/BankService.h
         include/Menu.h
+        include/Constants.h
 )
