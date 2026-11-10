@@ -143,7 +143,6 @@ public:
 
 		// 1. читаем поля базового класса
 		if (!(in >> id >> name >> bal >> currencyNumber >> statusNumber >> service)) {
-			in.clear(std::ios::failbit);
 			throw std::runtime_error("Ошибка чтения файла: неверная запись счета!");
 		}
 

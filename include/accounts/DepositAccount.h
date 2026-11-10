@@ -12,7 +12,6 @@ protected:
 		double rate;
 		int term;
 		if (!(in >> rate >> term)) {
-			in.clear(std::ios::failbit);
 			throw std::runtime_error("Ошибка чтения данных депозитного счета");
 		}
 		setInterestRate(rate);

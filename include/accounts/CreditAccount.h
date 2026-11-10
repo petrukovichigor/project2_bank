@@ -11,7 +11,6 @@ protected:
 	void readExtra(std::istream &in) override {
 		double limit, rate;
 		if (!(in >> limit >> rate)) {
-			in.clear(std::ios::failbit);
 			throw std::runtime_error("Ошибка чтения данных кредитного счета");
 		}
 		setCreditLimit(limit);

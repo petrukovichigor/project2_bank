@@ -10,7 +10,6 @@ protected:
 	void readExtra(std::istream &in) override {
 		double fee;
 		if (!(in >> fee)) {
-			in.clear(std::ios::failbit);
 			throw std::runtime_error("Ошибка чтения данных дебетового счета");
 		}
 		setMonthlyFee(fee);
