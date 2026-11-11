@@ -8,7 +8,7 @@ private:
 public:
 	// Добавление и удаление
 
-	// Добавляет услугу. Бросает исключение, если услуга пустая, заполнена не полностью (см. BankService::validate) или услуга с таким ID уже есть.
+	// Добавляет услугу. Бросает исключение, если услуга пустая, заполнена не полностью или услуга с таким ID уже есть.
 	void add(const std::shared_ptr<BankService> &service) {
 		if (!service) {
 			throw std::invalid_argument("Услуга не может быть пустой!");
@@ -92,7 +92,7 @@ public:
 		}
 	}
 
-	// Загружает каталог из файла и заменяет им текущее содержимое.
+	// Загружает каталог из файла и заменяет им текущее содержимое
 	void load(std::istream &in) {
 		ServiceCatalog loaded;
 		while (true) {
@@ -100,7 +100,7 @@ public:
 			if (in.eof()) break; // файл закончился
 			auto service = std::make_shared<BankService>();
 			in >> *service;
-			loaded.add(service); // add проверяет услугу и дубликаты ID
+			loaded.add(service);
 		}
 		services = std::move(loaded.services);
 	}
